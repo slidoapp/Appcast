@@ -44,13 +44,14 @@ public class SUAppcast {
                     }
 
                     if let name = self.sparkleNamespacedName(of: currentNode) {
-                        var nodes = nodesDict[name]
-                        if nodes == nil {
-                            nodes = [XMLNode]()
-                            nodesDict[name] = nodes
-                        }
-                        
-                        nodes?.append(currentNode)
+                        nodesDict[name, default: [XMLNode]()].append(currentNode)
+//                        var nodes = nodesDict[name]
+//                        if nodes == nil {
+//                            nodes = [XMLNode]()
+//                            nodesDict[name] = nodes
+//                        }
+//
+//                        nodes?.append(currentNode)
                     }
                     
                     node = currentNode.nextSibling
@@ -61,6 +62,7 @@ public class SUAppcast {
                 let name = nodeInfo.key
                 let nodeSet = nodeInfo.value
                 guard let node = self.bestNode(in: nodeSet, name: name) else {
+                    print("Missing node value for element \(name)")
                     continue
                 }
                 
@@ -88,7 +90,7 @@ public class SUAppcast {
                         let attributes = self.attributes(of: node)
                         let descriptionFormat = attributes[SUAppcastAttribute.Format]
                         
-                        var descriptionDict = [String: String]()
+                        var descriptionDict = AttributesDictionary()
                         descriptionDict["content"] = description
                         descriptionDict["format"] = descriptionFormat
                         
@@ -123,7 +125,7 @@ public class SUAppcast {
                     dict[name] = tags
                 }
                 else if name == SUAppcastElement.InformationalUpdate {
-                    var informationalUpdateVersions = Set<String>()
+                    var informationalUpdateVersions = SUAppcastItem.InformationalUpdateType()
                     
                     if let children = node.children {
                         for child in children {
@@ -209,6 +211,8 @@ public class SUAppcast {
         
         return nodes[preferredLanguageIndex]
     }
+    
+    typealias AttributesDictionary = [String: String]
     
     func attributes(of node: XMLNode) -> [String: String] {
         var dictionary = [String: String]()

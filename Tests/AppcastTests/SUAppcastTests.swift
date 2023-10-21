@@ -22,4 +22,20 @@ final class SUAppcastTests: XCTestCase {
         // Assert
         XCTAssertEqual(actualItemsCount, expectedItemsCount)
     }
+    
+    func test_items_simpleAppcast_createsAppcastItem() throws {
+        // Arrange
+        let appcastResource = Bundle.module.url(forResource: "appcast_simple", withExtension: "xml")!
+        let appcastData = try Data(contentsOf: appcastResource)
+        
+        let appcast = try SUAppcast(xmlData: appcastData, relativeTo: nil, stateResolver: nil)
+        
+        // Act
+        let actualAppcastItem = appcast.items.first
+        
+        // Assert
+        XCTAssertNotNil(actualAppcastItem)
+        XCTAssertEqual(actualAppcastItem?.title, "Version 2.0")
+        XCTAssertEqual(actualAppcastItem?.versionString, "2.0")
+    }
 }

@@ -15,7 +15,7 @@ class SUAppcastItemTests_isCriticalUpdate: XCTestCase {
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act
-        let actualCriticalUpdate = item.isCriticalUpdate()
+        let actualCriticalUpdate = item.isCriticalUpdate
         
         // Assert
         XCTAssertFalse(actualCriticalUpdate)
@@ -28,7 +28,7 @@ class SUAppcastItemTests_isCriticalUpdate: XCTestCase {
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act
-        let actualCriticalUpdate = item.isCriticalUpdate()
+        let actualCriticalUpdate = item.isCriticalUpdate
         
         // Assert
         XCTAssertTrue(actualCriticalUpdate)

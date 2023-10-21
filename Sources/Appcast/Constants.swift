@@ -46,3 +46,8 @@ public struct SURSSElement {
     public static let PubDate = "pubDate"
     public static let Title = "title"
 }
+
+public struct SURSSAttribute {
+    public static let URL = "url"
+    public static let Length = "length"
+}

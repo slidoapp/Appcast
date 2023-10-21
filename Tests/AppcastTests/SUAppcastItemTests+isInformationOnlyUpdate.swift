@@ -15,7 +15,7 @@ class SUAppcastItemTests_isInformationOnlyUpdate: XCTestCase {
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act
-        let actualInformationOnlyUpdate = item.isInformationOnlyUpdate()
+        let actualInformationOnlyUpdate = item.isInformationOnlyUpdate
         
         // Assert
         XCTAssertFalse(actualInformationOnlyUpdate)
@@ -28,7 +28,7 @@ class SUAppcastItemTests_isInformationOnlyUpdate: XCTestCase {
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act
-        let actualInformationOnlyUpdate = item.isInformationOnlyUpdate()
+        let actualInformationOnlyUpdate = item.isInformationOnlyUpdate
         
         // Assert
         XCTAssertTrue(actualInformationOnlyUpdate)

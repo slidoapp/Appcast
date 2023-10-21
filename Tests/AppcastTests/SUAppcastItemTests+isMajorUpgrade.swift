@@ -15,7 +15,7 @@ class SUAppcastItemTests_isMajorUpgrade: XCTestCase {
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act
-        let actualMajorUpgrade = item.isMajorUpgrade()
+        let actualMajorUpgrade = item.isMajorUpgrade
         
         // Assert
         XCTAssertFalse(actualMajorUpgrade)
@@ -28,7 +28,7 @@ class SUAppcastItemTests_isMajorUpgrade: XCTestCase {
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act
-        let actualMajorUpgrade = item.isMajorUpgrade()
+        let actualMajorUpgrade = item.isMajorUpgrade
         
         // Assert
         XCTAssertTrue(actualMajorUpgrade)
