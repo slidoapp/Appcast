@@ -69,12 +69,12 @@ public class SUAppcastItem {
         self.propertiesDictionary = Dictionary<String, AnyObject>()
     }
     
-    public let propertiesDictionary: Dictionary<String, AnyObject>
+    public let propertiesDictionary: Dictionary<String, Any>
     
     
     // MARK: private functions
     func isDeltaUpdate() -> Bool {
-        guard let rssElementEnclosure = self.propertiesDictionary[SURSSElement.Enclosure] else {
+        guard let rssElementEnclosure = self.propertiesDictionary[SURSSElement.Enclosure] as? [String: String] else {
             return false
         }
         
@@ -125,7 +125,7 @@ public class SUAppcastItem {
         }
     }
     
-    public init(dictionary dict: [String: AnyObject], relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
+    public init(dictionary dict: [String: Any], relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
         self._hasCriticalInformation = false
         self._informationalUpdateVersions = Set<String>()
         

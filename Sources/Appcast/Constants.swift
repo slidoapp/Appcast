@@ -7,6 +7,24 @@
 
 import Foundation
 
+public struct SUAppcastElement {
+    static let Version = SUAppcastAttribute.Version
+    static let ShortVersionString = SUAppcastAttribute.ShortVersionString
+    static let CriticalUpdate = "sparkle:criticalUpdate"
+    static let Deltas = "sparkle:deltas"
+    static let MinimumAutoupdateVersion = "sparkle:minimumAutoupdateVersion"
+    static let MinimumSystemVersion = "sparkle:minimumSystemVersion"
+    static let MaximumSystemVersion = "sparkle:maximumSystemVersion"
+    static let ReleaseNotesLink = "sparkle:releaseNotesLink"
+    static let FullReleaseNotesLink = "sparkle:fullReleaseNotesLink"
+    static let Tags = "sparkle:tags"
+    static let PhasedRolloutInterval = "sparkle:phasedRolloutInterval"
+    static let InformationalUpdate = "sparkle:informationalUpdate"
+    static let Channel = "sparkle:channel"
+    static let BelowVersion = "sparkle:belowVersion"
+    static let IgnoreSkippedUpgradesBelowVersion = "sparkle:ignoreSkippedUpgradesBelowVersion"
+}
+
 public struct SUAppcastAttribute {
     public static let ValueMacOS = "macos"
     public static let DeltaFrom = "sparkle:deltaFrom"

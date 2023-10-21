@@ -7,7 +7,7 @@ import XCTest
 @testable import Appcast
 
 final class SUAppcastTests: XCTestCase {
-    func testExample() throws {
+    func test_init_simpleAppcastFile() throws {
         // Arrange
         let expectedItemsCount = 1
         
@@ -15,7 +15,7 @@ final class SUAppcastTests: XCTestCase {
         let appcastData = try Data(contentsOf: appcastResource)
         
         // Act
-        let appcast = SUAppcast(xmlData: appcastData, relativeTo: nil, stateResolver: nil)
+        let appcast = try SUAppcast(xmlData: appcastData, relativeTo: nil, stateResolver: nil)
         
         let actualItemsCount = appcast.items.count
         
