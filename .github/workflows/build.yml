@@ -1,0 +1,35 @@
+name: build
+
+on:
+  push:
+    branches: [ "main", "dev/*", "test/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        xcode: ['xcode15', 'xcode14']
+        include:
+          - xcode: 'xcode15'
+            xcode-path: '/Applications/Xcode_15.0.app'
+            macos: 'macos-13'
+          - xcode: 'xcode14'
+            xcode-path: '/Applications/Xcode_14.3.1.app'
+            macos: 'macos-13'
+    
+    env:
+      DEVELOPER_DIR: ${{ matrix.xcode-path }}
+
+    runs-on: ${{ matrix.macos }}
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: build
+      run: swift build -v
+
+    - name: tests
+      run: swift test -v
