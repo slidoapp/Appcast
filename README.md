@@ -7,6 +7,30 @@
 
 Appcast library is a Swift package to work with Sparkle compatible appcast files.
 
+
+## Installation
+
+Requires Swift 5.8.
+
+
+### Swift Package Manager
+
+Add Appcast as a dependency to your project:
+
+```swift
+// Package.swift
+
+import PackageDescription
+
+let package = Package(
+    name: "YourProjectName",
+    dependencies: [
+        .package(url: "https://github.com/slidoapp/Appcast.git", from: "0.1.0"),
+    ]
+)
+```
+
+
 ## License
 
 Licensed under [MIT License](LICENSE.txt).  
