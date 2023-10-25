@@ -6,11 +6,11 @@
 import XCTest
 @testable import Appcast
 
-class SUAppcastItemTests_isInformationOnlyUpdate: XCTestCase {
+class SUAppcastItemTests_isInformationOnlyUpdate: SUAppcastItemBaseTests {
     // MARK: isInformationOnlyUpdate() tests
     func test_isInformationOnlyUpdate_nilState_isFalseByDefault() throws {
         let expectedResolvedState: SPUAppcastItemState? = nil
-        let dict = Dictionary<String, AnyObject>()
+        let dict = self.createBasicAppcastItemDictionary()
         
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
@@ -24,7 +24,7 @@ class SUAppcastItemTests_isInformationOnlyUpdate: XCTestCase {
     func test_isInformationOnlyUpdate_stateWithInformationOnlyUpdate_isTrue() throws {
         let expectedResolvedState = SPUAppcastItemState(withMajorUpgrade: false, criticalUpdate: true, informationalUpdate: true, minimumOperatingSystemVersionIsOK: false, maximumOperatingSystemVersionIsOK: false)
         
-        let dict = Dictionary<String, AnyObject>()
+        let dict = self.createBasicAppcastItemDictionary()
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act

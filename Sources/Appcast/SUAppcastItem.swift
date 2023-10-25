@@ -484,11 +484,12 @@ public class SUAppcastItem {
         self.deltaFromSparkleLocales = nil
     }
     
+    public typealias AppcastItemDictionary = [String: Any]
     typealias InformationalUpdateType = Set<String>
     typealias EnclosureType = SUAppcast.AttributesDictionary
     
     // MARK: private functions
-    public init(dictionary dict: [String: Any], relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
+    public init(dictionary dict: AppcastItemDictionary, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
         self._hasCriticalInformation = false
         self._informationalUpdateVersions = Set<String>()
         

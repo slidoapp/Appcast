@@ -6,11 +6,11 @@
 import XCTest
 @testable import Appcast
 
-class SUAppcastItemTests_isCriticalUpdate: XCTestCase {
+class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
     // MARK: isCriticalUpdate() tests
     func test_isCriticalUpdate_nilState_isFalseByDefault() throws {
         let expectedResolvedState: SPUAppcastItemState? = nil
-        let dict = Dictionary<String, AnyObject>()
+        let dict = self.createBasicAppcastItemDictionary()
         
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
@@ -23,8 +23,8 @@ class SUAppcastItemTests_isCriticalUpdate: XCTestCase {
     
     func test_isCriticalUpdate_stateWithCriticalUpdate_isTrue() throws {
         let expectedResolvedState = SPUAppcastItemState(withMajorUpgrade: false, criticalUpdate: true, informationalUpdate: false, minimumOperatingSystemVersionIsOK: false, maximumOperatingSystemVersionIsOK: false)
-        
-        let dict = Dictionary<String, AnyObject>()
+        let dict = self.createBasicAppcastItemDictionary()
+
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act

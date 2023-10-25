@@ -6,11 +6,11 @@
 import XCTest
 @testable import Appcast
 
-class SUAppcastItemTests_isMajorUpgrade: XCTestCase {
+class SUAppcastItemTests_isMajorUpgrade: SUAppcastItemBaseTests {
     // MARK: isMajorUpgrade() tests
     func test_isMajorUpgrade_noResolvedState_isFalseByDefault() throws {
         let expectedResolvedState: SPUAppcastItemState? = nil
-        let dict = Dictionary<String, AnyObject>()
+        let dict = self.createBasicAppcastItemDictionary()
         
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
@@ -24,7 +24,7 @@ class SUAppcastItemTests_isMajorUpgrade: XCTestCase {
     func test_isMajorUpgrade_stateWithMajorUpgrade_isTrue() throws {
         let expectedResolvedState = SPUAppcastItemState(withMajorUpgrade: true, criticalUpdate: false, informationalUpdate: false, minimumOperatingSystemVersionIsOK: false, maximumOperatingSystemVersionIsOK: false)
         
-        let dict = Dictionary<String, AnyObject>()
+        let dict = self.createBasicAppcastItemDictionary()
         let item = try SUAppcastItem(dictionary: dict, relativeTo: nil, stateResolver: nil, resolvedState: expectedResolvedState)
         
         // Act
