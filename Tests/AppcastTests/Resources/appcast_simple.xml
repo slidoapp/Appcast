@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Appcast Unit Tests</title>
+    <item>
+        <title>Version 2.0</title>
+        <description sparkle:format="plain-text">Release description.</description>
+        <pubDate>Sat, 26 Jul 2014 15:20:11 +0000</pubDate>
+        <enclosure url="https://example.org/Sparkle_Test_App.zip" sparkle:version="2.0" />
+        <sparkle:criticalUpdate sparkle:version="1.5" />
+    </item>
+  </channel>
+</rss>

@@ -16,7 +16,10 @@ let package = Package(
         ),
         .testTarget(
             name: "AppcastTests",
-            dependencies: ["Appcast"]
+            dependencies: ["Appcast"],
+            resources: [
+                .process("Resources"),
+            ]
         ),
     ]
 )
