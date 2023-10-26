@@ -7,11 +7,12 @@
 //
 
 import XCTest
+@testable import Appcast
 
 class SUAppcastTest: XCTestCase {
 
     func testParseAppcast() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast", withExtension: "xml")!
         
         do {
             let testData = try Data(contentsOf: testURL)
@@ -60,7 +61,7 @@ class SUAppcastTest: XCTestCase {
             var deltaItem: SUAppcastItem?
             let bestAppcastItem = SUAppcastDriver.bestItem(fromAppcastItems: supportedAppcastItems, getDeltaItem: &deltaItem, withHostVersion: "1.0", comparator: SUStandardVersionComparator())
 
-            XCTAssertEqual(bestAppcastItem, items[1])
+            XCTAssertIdentical(bestAppcastItem, items[1])
             XCTAssertEqual(deltaItem!.fileURL!.lastPathComponent, "3.0_from_1.0.patch")
             XCTAssertEqual(deltaItem!.versionString, "3.0")
 
@@ -82,7 +83,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testChannelsAndMacOSReleases() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast_channels", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast_channels", withExtension: "xml")!
         
         do {
             let testData = try Data(contentsOf: testURL)
@@ -140,7 +141,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testCriticalUpdateVersion() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast", withExtension: "xml")!
         
         do {
             let testData = try Data(contentsOf: testURL)
@@ -180,7 +181,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testInformationalUpdateVersions() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
         
         do {
             let testData = try Data(contentsOf: testURL)
@@ -201,7 +202,7 @@ class SUAppcastTest: XCTestCase {
                 
                 // Test delta updates inheriting informational only updates
                 do {
-                    let deltaUpdate = appcast.items[2].deltaUpdates!["2.0"]!
+                    let deltaUpdate = appcast.items[2].deltaUpdates["2.0"]!
                     XCTAssertTrue(deltaUpdate.isInformationOnlyUpdate)
                 }
             }
@@ -283,7 +284,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testMinimumAutoupdateVersion() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast_minimumAutoupdateVersion", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast_minimumAutoupdateVersion", withExtension: "xml")!
         
         do {
             let testData = try Data(contentsOf: testURL)
@@ -474,7 +475,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testMinimumAutoupdateVersionAdvancedSkipping() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast_minimumAutoupdateVersionSkipping", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast_minimumAutoupdateVersionSkipping", withExtension: "xml")!
         
         do {
             let testData = try Data(contentsOf: testURL)
@@ -572,7 +573,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testMinimumAutoupdateVersionIgnoringSkipping() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast_minimumAutoupdateVersionSkipping2", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast_minimumAutoupdateVersionSkipping2", withExtension: "xml")!
         
         do {
             let testData = try Data(contentsOf: testURL)
@@ -694,7 +695,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testPhasedGroupRollouts() {
-        let testURL = Bundle(for: SUAppcastTest.self).url(forResource: "testappcast_phasedRollout", withExtension: "xml")!
+        let testURL = Bundle.module.url(forResource: "testappcast_phasedRollout", withExtension: "xml")!
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "E, dd MMM yyyy HH:mm:ss Z"
@@ -865,7 +866,7 @@ class SUAppcastTest: XCTestCase {
     }
 
     func testParseAppcastWithLocalizedReleaseNotes() {
-        let testFile = Bundle(for: SUAppcastTest.self).path(forResource: "testlocalizedreleasenotesappcast",
+        let testFile = Bundle.module.path(forResource: "testlocalizedreleasenotesappcast",
                                                             ofType: "xml")!
         let testFileUrl = URL(fileURLWithPath: testFile)
         XCTAssertNotNil(testFileUrl)
@@ -921,7 +922,7 @@ class SUAppcastTest: XCTestCase {
     }
 
     func testNamespaces() {
-        let testFile = Bundle(for: SUAppcastTest.self).path(forResource: "testnamespaces", ofType: "xml")!
+        let testFile = Bundle.module.path(forResource: "testnamespaces", ofType: "xml")!
         let testData = NSData(contentsOfFile: testFile)!
 
         do {
@@ -943,7 +944,7 @@ class SUAppcastTest: XCTestCase {
     }
     
     func testLinks() {
-        let testFile = Bundle(for: SUAppcastTest.self).path(forResource: "test-links", ofType: "xml")!
+        let testFile = Bundle.module.path(forResource: "test-links", ofType: "xml")!
         let testData = NSData(contentsOfFile: testFile)!
         
         do {
@@ -981,7 +982,7 @@ class SUAppcastTest: XCTestCase {
     }
 
     func testRelativeURLs() {
-        let testFile = Bundle(for: SUAppcastTest.self).path(forResource: "test-relative-urls", ofType: "xml")!
+        let testFile = Bundle.module.path(forResource: "test-relative-urls", ofType: "xml")!
         let testData = NSData(contentsOfFile: testFile)!
 
         do {
@@ -1011,7 +1012,7 @@ class SUAppcastTest: XCTestCase {
     }
 
     func testDangerousLink() {
-        let testFile = Bundle(for: SUAppcastTest.self).path(forResource: "test-dangerous-link", ofType: "xml")!
+        let testFile = Bundle.module.path(forResource: "test-dangerous-link", ofType: "xml")!
         let testData = NSData(contentsOfFile: testFile)!
         
         do {
