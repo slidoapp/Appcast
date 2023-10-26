@@ -8,6 +8,12 @@
 import Foundation
 
 public class SUAppcast {
+    
+    internal static let empty = SUAppcast()
+    
+    internal init() {
+        self.items = []
+    }
 
     public init(xmlData appcastData: Data, relativeTo: URL?, stateResolver: SPUAppcastItemStateResolver?) throws {
         self.items = []

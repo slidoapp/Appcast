@@ -1,9 +1,5 @@
 //
-//  SUAppcastTest.swift
-//  Sparkle
-//
-//  Created by Kornel on 17/02/2016.
-//  Copyright © 2016 Sparkle Project. All rights reserved.
+// Copyright © 2016 Sparkle Project. All rights reserved.
 //
 
 import XCTest
