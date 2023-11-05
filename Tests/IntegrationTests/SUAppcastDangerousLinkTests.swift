@@ -6,21 +6,22 @@ import XCTest
 @testable import Appcast
 
 class SUAppcastDangerousLinksTests: XCTestCase {
-    func testDangerousLink() {
-        let testFile = Bundle.module.path(forResource: "test-dangerous-link", ofType: "xml")!
-        let testData = NSData(contentsOfFile: testFile)!
+    func test_appcastWithNonSecureLinks_failsParsing() throws {
+        // Arrange
+        let testFile = Bundle.module.url(forResource: "test-dangerous-link", withExtension: "xml")!
+        let testData = try Data(contentsOf: testFile)
         
-        do {
-            let baseURL: URL? = nil
-            
-            let stateResolver = SPUAppcastItemStateResolver(hostVersion: "1.0", applicationVersionComparator: SUStandardVersionComparator.default, standardVersionComparator: SUStandardVersionComparator.default)
-            
-            let _ = try SUAppcast(xmlData: testData as Data, relativeTo: baseURL, stateResolver: stateResolver)
-            
-            XCTFail("Appcast creation should fail when encountering dangerous link")
-        } catch let err as NSError {
-            NSLog("Expected error: %@", err)
-            XCTAssertNotNil(err)
+        let baseURL: URL? = nil
+        let stateResolver = SPUAppcastItemStateResolver(hostVersion: "1.0", applicationVersionComparator: SUStandardVersionComparator.default, standardVersionComparator: SUStandardVersionComparator.default)
+        
+        // Act & Assert
+        XCTAssertThrowsError(try SUAppcast(xmlData: testData as Data, relativeTo: baseURL, stateResolver: stateResolver)) { (error: Error) in
+            switch error as? AppcastItemError {
+            case .invalidInfoLink(let message):
+                XCTAssertEqual("Info link is not using secure HTTPS scheme.", message)
+            default:
+                XCTFail("Appcast with insecure links must throw the `AppcastItemError.invalidInfoLink` error.")
+            }
         }
     }
 }
