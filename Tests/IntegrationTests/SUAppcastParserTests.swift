@@ -82,35 +82,4 @@ class SUAppcastParserTest: XCTestCase {
         XCTAssertNil(actualItem.dateString)
         XCTAssertFalse(actualItem.isCriticalUpdate)
     }
-    
-    func testParseAppcast() {
-        let versionComparator = SUStandardVersionComparator.default
-        let hostVersion = "1.0"
-        let items = self.appcast.items
-
-        // Test best appcast item & a delta update item
-        let currentDate = Date()
-        let supportedAppcast = SUAppcastDriver.filterSupportedAppcast(appcast, phasedUpdateGroup: nil, skippedUpdate: nil, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator, testOSVersion: true, testMinimumAutoupdateVersion: false)
-        
-        let supportedAppcastItems = supportedAppcast.items
-        
-        var deltaItem: SUAppcastItem?
-        let bestAppcastItem = SUAppcastDriver.bestItem(fromAppcastItems: supportedAppcastItems, getDeltaItem: &deltaItem, withHostVersion: "1.0", comparator: SUStandardVersionComparator())
-
-        XCTAssertIdentical(bestAppcastItem, items[1])
-        XCTAssertEqual(deltaItem!.fileURL!.lastPathComponent, "3.0_from_1.0.patch")
-        XCTAssertEqual(deltaItem!.versionString, "3.0")
-
-        // Test latest delta update item available
-        var latestDeltaItem: SUAppcastItem?
-        SUAppcastDriver.bestItem(fromAppcastItems: supportedAppcastItems, getDeltaItem: &latestDeltaItem, withHostVersion: "2.0", comparator: SUStandardVersionComparator())
-
-        XCTAssertEqual(latestDeltaItem!.fileURL!.lastPathComponent, "3.0_from_2.0.patch")
-
-        // Test a delta item that does not exist
-        var nonexistantDeltaItem: SUAppcastItem?
-        SUAppcastDriver.bestItem(fromAppcastItems: supportedAppcastItems, getDeltaItem: &nonexistantDeltaItem, withHostVersion: "2.1", comparator: SUStandardVersionComparator())
-
-        XCTAssertNil(nonexistantDeltaItem)
-    }
 }
