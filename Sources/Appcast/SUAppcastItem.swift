@@ -549,7 +549,12 @@ public class SUAppcastItem {
         if let enclosureURLString = enclosure?[SURSSAttribute.URL] {
             let enclosureLengthString = enclosure?[SURSSAttribute.Length] ?? ""
             enclosureLength = Int64(enclosureLengthString) ?? 0
+            
+            self.fileURL = URL(string: enclosureURLString, relativeTo: appcastURL)
+        } else {
+            self.fileURL = nil
         }
+
         self.contentLength = max(0, enclosureLength)
 
         self.osString = enclosure?[SUAppcastAttribute.OsType]
@@ -586,7 +591,6 @@ public class SUAppcastItem {
         }
         
         self.displayVersionString = ""
-        self.fileURL = nil
         self.date = nil
         self.installationType = ""
         self.phasedRolloutInterval = 0
