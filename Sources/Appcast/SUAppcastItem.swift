@@ -490,7 +490,6 @@ public class SUAppcastItem {
     
     // MARK: private functions
     public init(dictionary dict: AppcastItemDictionary, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
-        self._hasCriticalInformation = false
         self._informationalUpdateVersions = Set<String>()
         
         self.propertiesDictionary = dict
@@ -563,6 +562,10 @@ public class SUAppcastItem {
         
         // self.channel = self.parseChannel(dict)
         self.channel = nil
+        
+        // Grab critical update information
+        let criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
+        self._hasCriticalInformation = criticalUpdateDict != nil
         
         self.displayVersionString = ""
         self.fileURL = nil

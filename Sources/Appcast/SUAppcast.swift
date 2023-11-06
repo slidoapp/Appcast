@@ -220,7 +220,7 @@ public class SUAppcast {
     
     typealias AttributesDictionary = [String: String]
     
-    func attributes(of node: XMLNode) -> [String: String] {
+    func attributes(of node: XMLNode) -> AttributesDictionary {
         var dictionary = [String: String]()
         
         guard let element = node as? XMLElement else {
