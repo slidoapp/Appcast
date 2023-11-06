@@ -348,7 +348,13 @@ public class SUAppcastItem {
      
      This is determined from the `osString` property.
      */
-    public let isMacOsUpdate: Bool
+    public var isMacOsUpdate: Bool {
+        guard let os = self.osString else {
+            return true
+        }
+        
+        return os == SUAppcastAttribute.ValueMacOS
+    }
 
     /**
      The delta updates for this update item.
@@ -478,7 +484,6 @@ public class SUAppcastItem {
         self.minimumAutoupdateVersion = nil
         self.ignoreSkippedUpgradesBelowVersion = nil
         self.osString = nil
-        self.isMacOsUpdate = false
         self.deltaUpdates = Dictionary<String, SUAppcastItem>()
         self.deltaFromSparkleExecutableSize = nil
         self.deltaFromSparkleLocales = nil
@@ -565,8 +570,25 @@ public class SUAppcastItem {
         
         self.ignoreSkippedUpgradesBelowVersion = dict[SUAppcastElement.IgnoreSkippedUpgradesBelowVersion] as? String
         
-        // self.channel = self.parseChannel(dict)
-        self.channel = nil
+        if let channel = dict[SUAppcastElement.Channel] as? String {
+            if channel.isEmpty {
+                self.channel = nil
+            }
+            else {
+                let validCharacters = NSMutableCharacterSet.alphanumeric()
+                validCharacters.addCharacters(in: "_.-")
+
+                // Reject characters in the channel name that may cause parsing problems in tools later
+                if let _ = channel.rangeOfCharacter(from: validCharacters.inverted) {
+                    self.channel = nil
+                }
+                else {
+                    self.channel = channel
+                }
+            }
+        } else {
+            self.channel = nil
+        }
         
         // Grab critical update information
         let criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
@@ -594,7 +616,6 @@ public class SUAppcastItem {
         self.date = nil
         self.installationType = ""
         self.phasedRolloutInterval = 0
-        self.isMacOsUpdate = true
         self.deltaUpdates = [String: SUAppcastItem]()
         self.deltaFromSparkleLocales = ["en"]
         self.deltaFromSparkleExecutableSize = 0

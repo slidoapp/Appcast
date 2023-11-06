@@ -11,8 +11,14 @@ public class SUAppcast {
     
     internal static let empty = SUAppcast()
     
+    public var items: [SUAppcastItem]
+
     internal init() {
         self.items = []
+    }
+    
+    internal init(items: [SUAppcastItem]) {
+        self.items = items
     }
 
     public init(xmlData appcastData: Data, relativeTo: URL?, stateResolver: SPUAppcastItemStateResolver?) throws {
@@ -165,8 +171,6 @@ public class SUAppcast {
             self.items.append(appcastItem)
         }
     }
-
-    public var items: [SUAppcastItem]
     
     func sparkleNamespacedName(of node: XMLNode) -> String? {
         // XML namespace prefix is semantically meaningless, so compare namespace URI

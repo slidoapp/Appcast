@@ -21,7 +21,26 @@ public class SUAppcastDriver {
     }
     
     public static func filterAppcast(_ appcast: SUAppcast, forMacOSAndAllowedChannels allowedChannels: [String]) -> SUAppcast {
-        return appcast
+        let filteredItems = appcast.items.filter { item in
+            // We will never care about other OS's
+            if !item.isMacOsUpdate {
+                return false
+            }
+            
+            // Delta updates cannot be top-level entries
+            if item.isDeltaUpdate {
+                return false
+            }
+            
+            // Item is on default channel
+            guard let channel = item.channel else {
+                return true
+            }
+            
+            return allowedChannels.contains(channel)
+        }
+        
+        return SUAppcast(items: filteredItems)
     }
     
     // + (SUAppcast *)filterAppcast:(SUAppcast *)appcast forMacOSAndAllowedChannels:(NSSet<NSString *> *)allowedChannels
