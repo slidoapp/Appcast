@@ -49,15 +49,13 @@ public struct SPUAppcastItemStateResolver {
     }
     
     func isCriticalUpdate(criticalUpdateDictionary: [String: Any]?) -> Bool {
-        let SUAppcastAttributeVersion = "sparkle:version"
-
         // Check if any critical update info is provided
         guard let criticalUpdateDictionary else {
             return false
         }
         
         // If no critical version is supplied, then it is critical
-        guard let criticalVersion = criticalUpdateDictionary[SUAppcastAttributeVersion] as? String else {
+        guard let criticalVersion = criticalUpdateDictionary[SUAppcastAttribute.Version] as? String else {
             return true
         }
         
