@@ -28,8 +28,8 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 
                 // Test delta updates inheriting informational only updates
                 do {
-                    let deltaUpdate = appcast.items[2].deltaUpdates["2.0"]!
-                    XCTAssertTrue(deltaUpdate.isInformationOnlyUpdate)
+                    let deltaUpdate = appcast.items[2].deltaUpdates["2.0"]
+                    XCTAssertEqual(true, deltaUpdate?.isInformationOnlyUpdate)
                 }
             }
             

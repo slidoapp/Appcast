@@ -524,7 +524,7 @@ public class SUAppcastItem {
         let descriptionDict = dict[SURSSElement.Description] as? SUAppcast.AttributesDictionary
         
         self.itemDescription = descriptionDict?["content"] as? String
-        self.itemDescriptionFormat = descriptionDict?["format"] as? String
+        self.itemDescriptionFormat = descriptionDict?["format"] as? String ?? self.itemDescription != nil ? "html" : nil
         
         if let infoUrlString = dict[SURSSElement.Link] as? String {
             guard let infoUrl = URL(string: infoUrlString, relativeTo: appcastURL) else {
@@ -592,7 +592,12 @@ public class SUAppcastItem {
         
         // Grab critical update information
         let criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
-        self._hasCriticalInformation = criticalUpdateDict != nil
+        let tags = dict[SUAppcastElement.Tags] as? [String]
+        let hasCriticalTag = tags?.contains(SUAppcastElement.CriticalUpdate) ?? false
+        self._hasCriticalInformation = criticalUpdateDict != nil || hasCriticalTag
+        
+        let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
+        self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
         
         // Find the appropriate release notes URL.
         if let releaseNotesLinkString = dict[SUAppcastElement.ReleaseNotesLink] as? String {
@@ -615,7 +620,6 @@ public class SUAppcastItem {
         self.displayVersionString = ""
         self.date = nil
         self.installationType = ""
-        self.phasedRolloutInterval = 0
         self.deltaUpdates = [String: SUAppcastItem]()
         self.deltaFromSparkleLocales = ["en"]
         self.deltaFromSparkleExecutableSize = 0
