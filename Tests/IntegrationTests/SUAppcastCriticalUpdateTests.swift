@@ -17,7 +17,7 @@ class SUAppcastCriticalUpdateTests: XCTestCase {
         self.testData = try Data(contentsOf: testURL)
     }
     
-    /// If critical update version is 1.5 and host version is 1.0, update should be marked critical/
+    /// If critical update version is 1.5 and host version is 1.0, update should be marked critical.
     func test_isCriticalUpdate_hostVersionIsLowerThanCriticalUpdateRelase() throws {
         // Arrange
         let hostVersion = "1.0"
@@ -31,7 +31,7 @@ class SUAppcastCriticalUpdateTests: XCTestCase {
         XCTAssertTrue(actualItem.isCriticalUpdate)
     }
 
-    /// If critical update version is 1.5 and host version is 1.5, update should not be marked critical/
+    /// If critical update version is 1.5 and host version is 1.5, update should not be marked critical.
     func test_isCriticalUpdate_hostVersionIsSameAsCriticalUpdateRelase() throws {
         // Arrange
         let hostVersion = "1.5"
@@ -45,7 +45,7 @@ class SUAppcastCriticalUpdateTests: XCTestCase {
         XCTAssertFalse(actualItem.isCriticalUpdate)
     }
     
-    /// If critical update version is 1.5 and host version is 1.6, update should not be marked critical/
+    /// If critical update version is 1.5 and host version is 1.6, update should not be marked critical.
     func test_isCriticalUpdate_hostVersionIsHigherThanCriticalUpdateRelase() throws {
         // Arrange
         let hostVersion = "1.6"
