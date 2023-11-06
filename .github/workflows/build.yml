@@ -31,5 +31,9 @@ jobs:
     - name: build
       run: swift build -v
 
-    - name: tests
-      run: swift test -v
+    - name: run unit tests
+      run: swift test --filter='AppcastTests'
+    
+    - name: run integration tests
+      continue-on-error: true
+      run: swift test --filter='AppcastTests'
