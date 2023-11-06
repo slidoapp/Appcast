@@ -12,10 +12,20 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Appcast"
+            name: "Appcast",
+            exclude: [
+                "SUAppcastItem.m"
+            ]
         ),
         .testTarget(
             name: "AppcastTests",
+            dependencies: ["Appcast"],
+            resources: [
+                .process("Resources"),
+            ]
+        ),
+        .testTarget(
+            name: "IntegrationTests",
             dependencies: ["Appcast"],
             resources: [
                 .process("Resources"),
