@@ -567,11 +567,27 @@ public class SUAppcastItem {
         let criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
         self._hasCriticalInformation = criticalUpdateDict != nil
         
+        // Find the appropriate release notes URL.
+        if let releaseNotesLinkString = dict[SUAppcastElement.ReleaseNotesLink] as? String {
+            self.releaseNotesURL = URL(string: releaseNotesLinkString, relativeTo: appcastURL)
+        }
+        else if itemDescription?.hasPrefix("https://") ?? false {
+            self.releaseNotesURL = URL(string: itemDescription ?? "")
+        }
+        else {
+            self.releaseNotesURL = nil
+        }
+        
+        // Get full release notes URL if informed.
+        if let fullReleaseNotesString = dict[SUAppcastElement.FullReleaseNotesLink] as? String {
+            self.fullReleaseNotesURL = URL(string: fullReleaseNotesString, relativeTo: appcastURL)
+        } else {
+            self.fullReleaseNotesURL = nil
+        }
+        
         self.displayVersionString = ""
         self.fileURL = nil
         self.date = nil
-        self.releaseNotesURL = nil
-        self.fullReleaseNotesURL = nil
         self.installationType = ""
         self.phasedRolloutInterval = 0
         self.isMacOsUpdate = true
