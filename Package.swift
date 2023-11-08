@@ -12,10 +12,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Appcast",
-            exclude: [
-                "SUAppcastItem.m"
-            ]
+            name: "Appcast"
         ),
         .testTarget(
             name: "AppcastTests",
