@@ -36,4 +36,4 @@ jobs:
     
     - name: run integration tests
       continue-on-error: true
-      run: swift test --filter='AppcastTests'
+      run: swift test --filter='IntegrationTests'
