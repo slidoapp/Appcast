@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   build:
     strategy:
@@ -31,9 +35,29 @@ jobs:
     - name: build
       run: swift build -v
 
+    - name: reports directory
+      run: mkdir reports
+
     - name: run unit tests
-      run: swift test --filter='AppcastTests'
-    
+      run: swift test --filter='AppcastTests' --parallel --xunit-output reports/AppcastTests.xml
+  
+    - name: report unit test results
+      uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
+      if: always()
+      with:
+        name: 'results-unit-tests (${{ matrix.xcode }})'
+        path: reports/AppcastTests.xml
+        reporter: java-junit
+  
     - name: run integration tests
       continue-on-error: true
-      run: swift test --filter='IntegrationTests'
+      run: swift test --filter='IntegrationTests' --parallel --xunit-output reports/IntegrationTests.xml
+
+    - name: report integration test results
+      uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
+      if: always()
+      with:
+        name: 'results-integration-tests (${{ matrix.xcode }})'
+        path: reports/IntegrationTests.xml
+        reporter: java-junit
+  
