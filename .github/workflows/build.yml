@@ -45,6 +45,7 @@ jobs:
     - name: report unit test results
       uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
       if: always()
+      id: results-unit-tests
       with:
         name: 'results-unit-tests (${{ matrix.xcode }})'
         path: reports/AppcastTests.xml
@@ -58,9 +59,19 @@ jobs:
     - name: report integration test results
       uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
       if: always()
+      id: results-integration-tests
       with:
         name: 'results-integration-tests (${{ matrix.xcode }})'
         path: reports/IntegrationTests.xml
         reporter: java-junit
         fail-on-error: false
   
+    - name: summary
+      if: always()
+      run: |
+        {
+          echo "# Test Reports (${{ matrix.xcode }})"
+          echo ""
+          echo "Unit Tests: <${{ steps.results-unit-tests.outputs.url_html }}>"
+          echo "Integration Tests: <${{ steps.results-integration-tests.outputs.url_html }}>"
+        } >> $GITHUB_STEP_SUMMARY
