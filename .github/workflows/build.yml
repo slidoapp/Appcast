@@ -14,14 +14,17 @@ jobs:
   build:
     strategy:
       matrix:
-        xcode: ['xcode15', 'xcode14']
+        swift: ['swift6.0', 'swift5.10', 'swift5.9']
         include:
-          - xcode: 'xcode15'
-            xcode-path: '/Applications/Xcode_15.0.app'
-            macos: 'macos-13'
-          - xcode: 'xcode14'
-            xcode-path: '/Applications/Xcode_14.3.1.app'
-            macos: 'macos-13'
+          - swift: 'swift6.0'
+            xcode-path: '/Applications/Xcode_16.1.0.app'
+            macos: 'macos-15'
+          - swift: 'swift5.10'
+            xcode-path: '/Applications/Xcode_15.4.0.app'
+            macos: 'macos-14'
+          - swift: 'swift5.9'
+            xcode-path: '/Applications/Xcode_15.2.0.app'
+            macos: 'macos-14'
     
     env:
       DEVELOPER_DIR: ${{ matrix.xcode-path }}
@@ -31,6 +34,9 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4
+
+    - name: swift version
+      run: swift --version
 
     - name: build
       run: swift build -v
@@ -47,7 +53,7 @@ jobs:
       if: always()
       id: results-unit-tests
       with:
-        name: 'results-unit-tests (${{ matrix.xcode }})'
+        name: 'results-unit-tests-${{ matrix.swift }}'
         path: reports/AppcastTests.xml
         reporter: java-junit
         fail-on-error: true
@@ -61,7 +67,7 @@ jobs:
       if: always()
       id: results-integration-tests
       with:
-        name: 'results-integration-tests (${{ matrix.xcode }})'
+        name: 'results-integration-tests-${{ matrix.swift }}'
         path: reports/IntegrationTests.xml
         reporter: java-junit
         fail-on-error: false
@@ -70,7 +76,7 @@ jobs:
       if: always()
       run: |
         {
-          echo "# Test Reports (${{ matrix.xcode }})"
+          echo "# Test Reports (${{ matrix.swift }})"
           echo ""
           echo "Unit Tests: <${{ steps.results-unit-tests.outputs.url_html }}>"
           echo "Integration Tests: <${{ steps.results-integration-tests.outputs.url_html }}>"
