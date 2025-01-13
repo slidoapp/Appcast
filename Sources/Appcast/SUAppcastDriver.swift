@@ -11,13 +11,26 @@ public class SUAppcastDriver {
     public static func filterSupportedAppcast(_ appcast: SUAppcast, phasedUpdateGroup: NSNumber?, skippedUpdate: Any?, currentDate: Date, hostVersion: String, versionComparator: SUVersionComparison, testOSVersion: Bool, testMinimumAutoupdateVersion: Bool) -> SUAppcast {
         return appcast
     }
+    public static func deltaUpdate(from appcastItem: SUAppcastItem, hostVersion: String) -> SUAppcastItem? {
+        return appcastItem.deltaUpdates[hostVersion]
+    }
     
     public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem {
-        return fromAppcastItems.first!
+        var item: SUAppcastItem?
+        for appcastItem in fromAppcastItems {
+            if item == nil || comparator.compareVersion(item!.versionString, toVersion: appcastItem.versionString) == .orderedAscending {
+                item = appcastItem
+            }
+        }
+        return item!
     }
     
     public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: inout SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem {
-        return fromAppcastItems.first!
+        let item = bestItem(fromAppcastItems: fromAppcastItems, getDeltaItem: getDeltaItem, withHostVersion: withHostVersion, comparator: comparator)
+        if (getDeltaItem != nil) {
+            getDeltaItem = deltaUpdate(from: item, hostVersion: withHostVersion)
+        }
+        return item
     }
     
     public static func filterAppcast(_ appcast: SUAppcast, forMacOSAndAllowedChannels allowedChannels: [String]) -> SUAppcast {
