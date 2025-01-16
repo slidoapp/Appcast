@@ -267,7 +267,7 @@ public class SUAppcastItem {
      
      Old applications must be using Sparkle 1.25 or later to support phased rollout intervals, otherwise they may assume updates are immediately available.
      */
-    public let phasedRolloutInterval: Int?
+    public let phasedRolloutInterval: NSNumber?
 
     /**
      The minimum bundle version string this update requires for automatically downloading and installing updates if provided.
@@ -599,8 +599,12 @@ public class SUAppcastItem {
             self._state = resolvedState
         }
         
-        let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
-        self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
+        if let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String, let rolloutInterval = Int(rolloutIntervalString) {
+            self.phasedRolloutInterval = NSNumber(value: rolloutInterval)
+        }
+        else {
+            self.phasedRolloutInterval = nil
+        }
         
         // Find the appropriate release notes URL.
         if let releaseNotesLinkString = dict[SUAppcastElement.ReleaseNotesLink] as? String {
