@@ -36,7 +36,7 @@ public struct SPUAppcastItemStateResolver {
             return maximumVersionOK
         }
         
-        maximumVersionOK = standardVersionComparator.compareVersion(maximumSystemVersion, toVersion: SUOperatingSystem.systemVersionString) != .orderedDescending
+        maximumVersionOK = standardVersionComparator.compareVersion(maximumSystemVersion, toVersion: SUOperatingSystem.systemVersionString) != .orderedAscending
         return maximumVersionOK
     }
 
