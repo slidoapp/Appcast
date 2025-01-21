@@ -9,11 +9,11 @@ import Foundation
 
 public class SUAppcastDriver {
     public static func itemIsReadyForPhasedRollout(_ item: SUAppcastItem, phasedUpdateGroup: NSNumber?, currentDate: Date, hostVersion: String, versionComparator: SUVersionComparison) -> Bool {
-        if phasedUpdateGroup == nil || item.isCriticalUpdate {
+        guard let phasedUpdateGroup, !item.isCriticalUpdate else {
             return true
         }
 
-        guard let phasedRolloutInterval = item.phasedRolloutInterval?.doubleValue else {
+        guard let phasedRolloutInterval = item.phasedRolloutInterval else {
             return true
         }
 
@@ -22,9 +22,9 @@ public class SUAppcastDriver {
         }
 
         let timeSinceRelease = currentDate.timeIntervalSince(itemReleaseDate)
-        let timeToWaitForGroup = phasedRolloutInterval * Double(phasedUpdateGroup!.uintValue)
+        let timeToWaitForGroup = phasedRolloutInterval * phasedUpdateGroup.intValue
 
-        return timeSinceRelease >= timeToWaitForGroup
+        return timeSinceRelease >= Double(timeToWaitForGroup)
     }
     
     public static func containsSkippedUpdate(item: SUAppcastItem, skippedUpdate: SPUSkippedUpdate?, hostPassesSkippedMajorVersion: Bool, versionComparator: SUVersionComparison) -> Bool {
