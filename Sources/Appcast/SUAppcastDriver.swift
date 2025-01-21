@@ -34,12 +34,14 @@ public class SUAppcastDriver {
 
         let skippedMajorVersion = skippedUpdate.majorVersion
         let skippedMajorSubreleaseVersion = skippedUpdate.majorSubreleaseVersion
-
-        if !hostPassesSkippedMajorVersion, let skippedMajorVersion = skippedMajorVersion, let minimumAutoupdateVersion = item.minimumAutoupdateVersion, versionComparator.compareVersion(skippedMajorVersion, toVersion: minimumAutoupdateVersion) != .orderedAscending, (item.ignoreSkippedUpgradesBelowVersion == nil || (skippedMajorSubreleaseVersion != nil && versionComparator.compareVersion(skippedMajorSubreleaseVersion!, toVersion: item.ignoreSkippedUpgradesBelowVersion!) != .orderedAscending)) {
-            // If skipped major version is >= than the item's minimumAutoupdateVersion, we can skip the item.
-            // But if there is an ignoreSkippedUpgradesBelowVersion, we can only skip the item if the last skipped subrelease
-            // version is >= than that version provided by the item
-            return true
+        
+        if !hostPassesSkippedMajorVersion, let skippedMajorVersion, let minimumAutoupdateVersion = item.minimumAutoupdateVersion, let skippedMajorSubreleaseVersion, let ignoreSkippedUpgradesBelowVersion = item.ignoreSkippedUpgradesBelowVersion {
+            if versionComparator.compareVersion(skippedMajorVersion, toVersion: minimumAutoupdateVersion) != .orderedAscending, versionComparator.compareVersion(skippedMajorSubreleaseVersion, toVersion: ignoreSkippedUpgradesBelowVersion) != .orderedAscending {
+                // If skipped major version is >= than the item's minimumAutoupdateVersion, we can skip the item.
+                // But if there is an ignoreSkippedUpgradesBelowVersion, we can only skip the item if the last skipped subrelease
+                // version is >= than that version provided by the item
+                return true
+            }
         }
 
         if let skippedMinorVersion = skippedUpdate.minorVersion, versionComparator.compareVersion(skippedMinorVersion, toVersion: item.versionString) != .orderedAscending {
