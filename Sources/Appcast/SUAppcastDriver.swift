@@ -73,20 +73,12 @@ public class SUAppcastDriver {
         return appcastItem.deltaUpdates[hostVersion]
     }
     
-    public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem {
+    public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem? {
         var item: SUAppcastItem?
         for appcastItem in fromAppcastItems {
             if item == nil || comparator.compareVersion(item!.versionString, toVersion: appcastItem.versionString) == .orderedAscending {
                 item = appcastItem
             }
-        }
-        return item!
-    }
-    
-    public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: inout SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem {
-        let item = bestItem(fromAppcastItems: fromAppcastItems, getDeltaItem: getDeltaItem, withHostVersion: withHostVersion, comparator: comparator)
-        if (getDeltaItem != nil) {
-            getDeltaItem = deltaUpdate(from: item, hostVersion: withHostVersion)
         }
         return item
     }
