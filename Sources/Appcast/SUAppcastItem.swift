@@ -600,7 +600,7 @@ public class SUAppcastItem {
         }
         
         let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
-        self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
+                self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
         
         // Find the appropriate release notes URL.
         if let releaseNotesLinkString = dict[SUAppcastElement.ReleaseNotesLink] as? String {
