@@ -5,7 +5,7 @@
 // Based on SUSignatures.m from Sparkle project.
 //
 
-public struct SUSignatures {
+public struct SUSignatures: Sendable {
     public let ed25519: String
 
     public init(ed ed25519: String) {
