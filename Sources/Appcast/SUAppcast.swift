@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class SUAppcast {
+public struct SUAppcast: Sendable {
     
     internal static let empty = SUAppcast()
     
