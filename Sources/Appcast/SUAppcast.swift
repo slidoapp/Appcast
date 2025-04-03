@@ -44,7 +44,7 @@ public class SUAppcast {
 //        }
         
         for item in xmlItems {
-            var dict = [String: Any]()
+            var dict = SUAppcastItemProperties()
             var nodesDict = [String: [XMLNode]]()
             
             if item.childCount > 0 {

@@ -7,6 +7,8 @@
 
 import Foundation
 
+public typealias SUAppcastItemProperties = [String: any Sendable]
+
 /// The appcast item describing an update in the application's appcast feed.
 ///
 /// An appcast item represents a single update item in the `SUAppcast`  contained within the @c <item> element.
@@ -16,7 +18,7 @@ import Foundation
 /// 
 /// Extended documentation and examples on using appcast item features are available at:
 /// https://sparkle-project.org/documentation/publishing/
-public class SUAppcastItem {
+public struct SUAppcastItem: Sendable {
     /// An empty appcast item.
     /// 
     /// This may be used as a potential return value in `-[SPUUpdaterDelegate bestValidUpdateInAppcast:forUpdater:]`
@@ -415,7 +417,7 @@ public class SUAppcastItem {
      
      This is useful for querying custom extensions or elements from the appcast item.
      */
-    public let propertiesDictionary: [String: Any]
+    public let propertiesDictionary: SUAppcastItemProperties
     
     
     // MARK: private members
@@ -461,7 +463,7 @@ public class SUAppcastItem {
         self._hasCriticalInformation = false
         self._informationalUpdateVersions = Set<String>()
         
-        self.propertiesDictionary = Dictionary<String, Any>()
+        self.propertiesDictionary = SUAppcastItemProperties()
         
         // set public properties
         self.versionString = ""
@@ -489,12 +491,11 @@ public class SUAppcastItem {
         self.deltaFromSparkleLocales = nil
     }
     
-    public typealias AppcastItemDictionary = [String: Any]
     typealias InformationalUpdateType = Set<String>
     typealias EnclosureType = SUAppcast.AttributesDictionary
     
     // MARK: private functions
-    public init(dictionary dict: AppcastItemDictionary, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
+    public init(dictionary dict: SUAppcastItemProperties, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
         self._informationalUpdateVersions = Set<String>()
         
         self.propertiesDictionary = dict

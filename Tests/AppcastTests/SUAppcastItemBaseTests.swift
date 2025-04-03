@@ -8,8 +8,8 @@ import XCTest
 
 class SUAppcastItemBaseTests: XCTestCase {
     
-    func createBasicAppcastItemDictionary() -> SUAppcastItem.AppcastItemDictionary {
-        var dict = SUAppcastItem.AppcastItemDictionary()
+    func createBasicAppcastItemDictionary() -> SUAppcastItemProperties {
+        var dict = SUAppcastItemProperties()
         dict[SURSSElement.Title] = "Acme v1.0"
         dict[SUAppcastElement.Version] = "1.0.0"
         

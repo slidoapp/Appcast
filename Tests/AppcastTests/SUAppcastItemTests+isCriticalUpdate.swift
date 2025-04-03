@@ -64,7 +64,7 @@ class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
     }
     
     // MARK: - helper functions
-    func createAppcastItemWithCriticalUpdateDictionary() -> SUAppcastItem.AppcastItemDictionary {
+    func createAppcastItemWithCriticalUpdateDictionary() -> SUAppcastItemProperties {
         var dict = self.createBasicAppcastItemDictionary()
         
         dict[SUAppcastElement.CriticalUpdate] = SUAppcast.AttributesDictionary()
@@ -72,7 +72,7 @@ class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
         return dict
     }
 
-    func createAppcastItemWithLegacyTagWithCriticalUpdateDictionary() -> SUAppcastItem.AppcastItemDictionary {
+    func createAppcastItemWithLegacyTagWithCriticalUpdateDictionary() -> SUAppcastItemProperties {
         var dict = self.createBasicAppcastItemDictionary()
         
         let tags = [SUAppcastElement.CriticalUpdate]
