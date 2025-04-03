@@ -7,9 +7,14 @@
 
 import Foundation
 
-public class SUOperatingSystem {
-    public static var systemVersionString: String {
-        let version = ProcessInfo.processInfo.operatingSystemVersion
-        return String(format: "%ld.%ld.%ld", version.majorVersion, version.minorVersion, version.patchVersion)
+public struct SUOperatingSystem: Sendable {
+    public let systemVersionString: String
+    
+    init() {
+        self.init(ProcessInfo.processInfo.operatingSystemVersion)
+    }
+    
+    init(_ version: OperatingSystemVersion) {
+        self.systemVersionString = String(format: "%ld.%ld.%ld", version.majorVersion, version.minorVersion, version.patchVersion)
     }
 }

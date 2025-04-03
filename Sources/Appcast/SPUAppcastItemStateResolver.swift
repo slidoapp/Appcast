@@ -25,7 +25,8 @@ public struct SPUAppcastItemStateResolver {
             return minimumVersionOK
         }
         
-        minimumVersionOK = standardVersionComparator.compareVersion(minimumSystemVersion, toVersion: SUOperatingSystem.systemVersionString) != .orderedDescending
+        let osVersion = SUOperatingSystem()
+        minimumVersionOK = standardVersionComparator.compareVersion(minimumSystemVersion, toVersion: osVersion.systemVersionString) != .orderedDescending
         return minimumVersionOK
     }
      
@@ -36,7 +37,8 @@ public struct SPUAppcastItemStateResolver {
             return maximumVersionOK
         }
         
-        maximumVersionOK = standardVersionComparator.compareVersion(maximumSystemVersion, toVersion: SUOperatingSystem.systemVersionString) != .orderedAscending
+        let osVersion = SUOperatingSystem()
+        maximumVersionOK = standardVersionComparator.compareVersion(maximumSystemVersion, toVersion: osVersion.systemVersionString) != .orderedAscending
         return maximumVersionOK
     }
 
