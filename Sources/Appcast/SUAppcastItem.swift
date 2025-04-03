@@ -602,6 +602,15 @@ public class SUAppcastItem {
         let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
                 self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
         
+        // Sparkle 1.0.0 supports the `<enclosure shortVersionString="">` attribute
+        var shortVersionString = enclosure?[SUAppcastAttribute.ShortVersionString] as? String
+        if shortVersionString == nil {
+            // Sparkle 2.0.0 supports the `<sparkle:shortVersionString>` element
+            shortVersionString = dict[SUAppcastElement.ShortVersionString] as? String
+        }
+        
+        self.displayVersionString = shortVersionString ?? self.versionString
+        
         // Find the appropriate release notes URL.
         if let releaseNotesLinkString = dict[SUAppcastElement.ReleaseNotesLink] as? String {
             self.releaseNotesURL = URL(string: releaseNotesLinkString, relativeTo: appcastURL)
@@ -620,7 +629,6 @@ public class SUAppcastItem {
             self.fullReleaseNotesURL = nil
         }
         
-        self.displayVersionString = ""
         self.date = nil
         self.installationType = ""
         self.deltaUpdates = [String: SUAppcastItem]()
