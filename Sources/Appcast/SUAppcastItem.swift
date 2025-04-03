@@ -602,10 +602,10 @@ public class SUAppcastItem {
         let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
         self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
         
-        // Sparkle 1.0.0 supports `<enclosure shortVersionString="">` attribute
+        // Sparkle 1.0.0 supports the `<enclosure shortVersionString="">` attribute
         var shortVersionString = enclosure?[SUAppcastAttribute.ShortVersionString] as? String
         if shortVersionString == nil {
-            // Sparkle 2.0.0 supports `<sparkle:shortVersionString>` element
+            // Sparkle 2.0.0 supports the `<sparkle:shortVersionString>` element
             shortVersionString = dict[SUAppcastElement.ShortVersionString] as? String
         }
         
