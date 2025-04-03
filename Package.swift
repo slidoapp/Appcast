@@ -12,7 +12,10 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Appcast"
+            name: "Appcast",
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
+            ]
         ),
         .testTarget(
             name: "AppcastTests",
