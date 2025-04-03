@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SPUSkippedUpdate {
+public struct SPUSkippedUpdate: Sendable {
     public let minorVersion: String?
     public let majorVersion: String?
     public let majorSubreleaseVersion: String?
