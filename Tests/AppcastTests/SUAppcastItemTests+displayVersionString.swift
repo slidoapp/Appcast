@@ -65,7 +65,7 @@ class SUAppcastItemTests_displayVersionString: SUAppcastItemBaseTests {
     }
     
     func createLegacyAppcastItemWithEnclosureShortVersionString(sparkleVersion: String, sparkleShortVersion: String) throws -> SUAppcastItem {
-        var enclosure = SUAppcastItem.AppcastItemDictionary()
+        var enclosure = SUAppcastItemProperties()
         enclosure[SUAppcastAttribute.ShortVersionString] = sparkleShortVersion
         
         var dict = self.createBasicAppcastItemDictionary()
