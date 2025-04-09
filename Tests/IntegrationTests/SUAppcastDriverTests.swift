@@ -61,7 +61,7 @@ class SUAppcastDriverTests: XCTestCase {
         let actualBestAppcastItem = SUAppcastDriver.bestItem(fromAppcastItems: supportedAppcastItems, getDeltaItem: &deltaItem, withHostVersion: hostVersion, comparator: self.versionComparator)
 
         // Arrange
-        XCTAssertIdentical(actualBestAppcastItem, supportedAppcastItems[1])
+        XCTAssertEqual(actualBestAppcastItem, supportedAppcastItems[1])
     }
     
     /// Test latest delta update item available

@@ -7,6 +7,8 @@
 
 import Foundation
 
+public typealias SUAppcastItemProperties = [String: any Sendable]
+
 /// The appcast item describing an update in the application's appcast feed.
 ///
 /// An appcast item represents a single update item in the `SUAppcast`  contained within the @c <item> element.
@@ -16,7 +18,7 @@ import Foundation
 /// 
 /// Extended documentation and examples on using appcast item features are available at:
 /// https://sparkle-project.org/documentation/publishing/
-public class SUAppcastItem {
+public struct SUAppcastItem: Sendable, Equatable {
     /// An empty appcast item.
     /// 
     /// This may be used as a potential return value in `-[SPUUpdaterDelegate bestValidUpdateInAppcast:forUpdater:]`
@@ -399,23 +401,20 @@ public class SUAppcastItem {
      An update item is a delta update if it is in the `deltaUpdates` of another update item.
      */
     public var isDeltaUpdate: Bool {
-        guard let rssElementEnclosure = self.propertiesDictionary[SURSSElement.Enclosure] as? [String: String] else {
-            return false
-        }
-        
-        guard let _ = rssElementEnclosure[SUAppcastAttribute.DeltaFrom] else {
+        guard let _ = self.rssEnclosure[SUAppcastAttribute.DeltaFrom] else {
             return false
         }
         
         return true
     }
 
-    /**
-     The dictionary representing the entire appcast item.
-     
-     This is useful for querying custom extensions or elements from the appcast item.
-     */
-    public let propertiesDictionary: [String: Any]
+    // TODO: Figure out how to propagate extension elements compatible with Sendable & Equatable protocols.
+    // /**
+    //  The dictionary representing the entire appcast item.
+    //
+    //  This is useful for querying custom extensions or elements from the appcast item.
+    //  */
+    // public let propertiesDictionary: SUAppcastItemProperties
     
     
     // MARK: private members
@@ -430,6 +429,8 @@ public class SUAppcastItem {
     
     // Indicates the versions we update from that are informational-only
     var _informationalUpdateVersions: InformationalUpdateType?
+    
+    let rssEnclosure: EnclosureType
     
     // MARK: xxx
     static let DELTA_EXPECTED_LOCALES_LIMIT = 15
@@ -461,7 +462,7 @@ public class SUAppcastItem {
         self._hasCriticalInformation = false
         self._informationalUpdateVersions = Set<String>()
         
-        self.propertiesDictionary = Dictionary<String, Any>()
+        // self.propertiesDictionary = SUAppcastItemProperties()
         
         // set public properties
         self.versionString = ""
@@ -487,21 +488,23 @@ public class SUAppcastItem {
         self.deltaUpdates = Dictionary<String, SUAppcastItem>()
         self.deltaFromSparkleExecutableSize = nil
         self.deltaFromSparkleLocales = nil
+        
+        self.rssEnclosure = .init()
     }
     
-    public typealias AppcastItemDictionary = [String: Any]
     typealias InformationalUpdateType = Set<String>
     typealias EnclosureType = SUAppcast.AttributesDictionary
     
     // MARK: private functions
-    public init(dictionary dict: AppcastItemDictionary, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
+    public init(dictionary dict: SUAppcastItemProperties, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
         self._informationalUpdateVersions = Set<String>()
         
-        self.propertiesDictionary = dict
+        // self.propertiesDictionary = dict
         
         self.title = dict[SURSSElement.Title] as? String
         
         let enclosure = dict[SURSSElement.Enclosure] as? EnclosureType
+        self.rssEnclosure = enclosure ?? .init()
         
         // Try to find a version string.
         // Finding the new version number from the RSS feed is a little bit hacky. There are a few ways:

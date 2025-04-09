@@ -12,7 +12,7 @@ import Foundation
 /// This comparator is adapted from MacPAD, by Kevin Ballard.
 /// It's "dumb" in that it does essentially string comparison
 /// in components split by character type.
-public struct SUStandardVersionComparator: SUVersionComparison {
+public struct SUStandardVersionComparator: SUVersionComparison, Sendable {
     /// A singleton instance of the comparator.
     public static let `default` = SUStandardVersionComparator()
     

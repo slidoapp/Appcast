@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class SUAppcast {
+public struct SUAppcast: Sendable {
     
     internal static let empty = SUAppcast()
     
@@ -44,7 +44,7 @@ public class SUAppcast {
 //        }
         
         for item in xmlItems {
-            var dict = [String: Any]()
+            var dict = SUAppcastItemProperties()
             var nodesDict = [String: [XMLNode]]()
             
             if item.childCount > 0 {

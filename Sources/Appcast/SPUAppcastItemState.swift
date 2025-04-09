@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SPUAppcastItemState {
+public struct SPUAppcastItemState: Sendable, Equatable {
     public let majorUpgrade: Bool
     public let criticalUpdate: Bool
     public let informationalUpdate: Bool
