@@ -46,7 +46,7 @@ jobs:
 
     - name: run unit tests
       continue-on-error: true
-      run: swift test --filter='AppcastTests' --parallel --xunit-output reports/AppcastTests.xml
+      run: swift test --filter='AppcastTests' --skip-build --parallel --xunit-output reports/AppcastTests.xml
   
     - name: report unit test results
       uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
@@ -60,7 +60,7 @@ jobs:
   
     - name: run integration tests
       continue-on-error: true
-      run: swift test --filter='IntegrationTests' --parallel --xunit-output reports/IntegrationTests.xml || true
+      run: swift test --filter='IntegrationTests' --skip-build --parallel --xunit-output reports/IntegrationTests.xml || true
 
     - name: report integration test results
       uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
