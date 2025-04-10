@@ -3,12 +3,13 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Foundation
+import Testing
 @testable import Appcast
 
-class SPUDownloadDataTests: XCTestCase {
+struct SPUDownloadDataTests {
 
-    func test_init() throws {
+    @Test func init_SPUDownloadData() throws {
         // Arrange
         let data = Data()
         let url = URL(string: "https://example.org")!
@@ -19,9 +20,9 @@ class SPUDownloadDataTests: XCTestCase {
         let downloadData = SPUDownloadData(withData: data, URL: url, textEncodingName: textEncodingName, MIMEType: mimeType)
 
         // Assert
-        XCTAssertEqual(downloadData.data, data)
-        XCTAssertEqual(downloadData.URL, url)
-        XCTAssertEqual(downloadData.textEncodingName, textEncodingName)
-        XCTAssertEqual(downloadData.MIMEType, mimeType)
+        #expect(downloadData.data == data)
+        #expect(downloadData.URL == url)
+        #expect(downloadData.textEncodingName == textEncodingName)
+        #expect(downloadData.MIMEType == mimeType)
     }
 }

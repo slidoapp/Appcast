@@ -3,13 +3,13 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
-class SUAppcastItemTests_displayVersionString: SUAppcastItemBaseTests {
+final class SUAppcastItemTests_displayVersionString: SUAppcastItemBaseTests {
     // MARK: displayVersionString() tests
     /// When update has only the `<sparkle:version>` element the ``SUAppcastItem.displayVersionString`` value is equal to the ``SUAppcastItem.versionString`` value.
-    func test_displayVersionString_appcastWithoutSparkleShortVersionStringValue() throws {
+    @Test func displayVersionString_appcastWithoutSparkleShortVersionStringValue() throws {
         // Arrange
         let item = try self.createAppcastItemWithShortVersionString(sparkleVersion: "1.4.8", sparkleShortVersion: nil)
         
@@ -18,12 +18,12 @@ class SUAppcastItemTests_displayVersionString: SUAppcastItemBaseTests {
         let displayVersion = item.displayVersionString
         
         // Assert
-        XCTAssertEqual("1.4.8", version)
-        XCTAssertEqual(version, displayVersion)
+        #expect("1.4.8" == version)
+        #expect(version == displayVersion)
     }
     
     /// When update has the `<sparkle:sparkleShortVersion>` element, use it for the ``SUAppcastItem.displayVersionString`` value.
-    func test_displayVersionString_appcastWithSparkleShortVersionStringElement() throws {
+    @Test func displayVersionString_appcastWithSparkleShortVersionStringElement() throws {
         // Arrange
         let item = try self.createAppcastItemWithShortVersionString(sparkleVersion: "1799", sparkleShortVersion: "2.3.0")
         
@@ -32,13 +32,13 @@ class SUAppcastItemTests_displayVersionString: SUAppcastItemBaseTests {
         let displayVersion = item.displayVersionString
         
         // Assert
-        XCTAssertEqual("1799", version)
-        XCTAssertEqual("2.3.0", displayVersion)
+        #expect("1799" == version)
+        #expect("2.3.0" == displayVersion)
     }
     
     /// Sparkle 1.0 supports the `<enclosure sparkle:shortVersionString="1.0.2">` attribute.
     /// This value is prefered over the `<sparkle:sparkleShortVersion>` element based on the original implementation.
-    func test_displayVersionString_enclosureElementWithShortVersionStringAttribute() throws {
+    @Test func displayVersionString_enclosureElementWithShortVersionStringAttribute() throws {
         // Arrange
         let item = try self.createLegacyAppcastItemWithEnclosureShortVersionString(sparkleVersion: "1430", sparkleShortVersion: "1.0.2")
         
@@ -47,8 +47,8 @@ class SUAppcastItemTests_displayVersionString: SUAppcastItemBaseTests {
         let displayVersion = item.displayVersionString
         
         // Assert
-        XCTAssertEqual("1430", version)
-        XCTAssertEqual("1.0.2", displayVersion)
+        #expect("1430" == version)
+        #expect("1.0.2" == displayVersion)
     }
 
     // MARK: helper methods for creating test data

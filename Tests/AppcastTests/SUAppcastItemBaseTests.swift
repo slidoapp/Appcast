@@ -3,11 +3,10 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
-class SUAppcastItemBaseTests: XCTestCase {
-    
+class SUAppcastItemBaseTests {
     func createBasicAppcastItemDictionary() -> SUAppcastItemProperties {
         var dict = SUAppcastItemProperties()
         dict[SURSSElement.Title] = "Acme v1.0"

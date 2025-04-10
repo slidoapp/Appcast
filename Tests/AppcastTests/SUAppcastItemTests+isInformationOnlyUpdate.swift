@@ -3,12 +3,12 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
-class SUAppcastItemTests_isInformationOnlyUpdate: SUAppcastItemBaseTests {
+final class SUAppcastItemTests_isInformationOnlyUpdate: SUAppcastItemBaseTests {
     // MARK: isInformationOnlyUpdate() tests
-    func test_isInformationOnlyUpdate_nilState_isFalseByDefault() throws {
+    @Test func isInformationOnlyUpdate_nilState_isFalseByDefault() throws {
         let expectedResolvedState: SPUAppcastItemState? = nil
         let dict = self.createBasicAppcastItemDictionary()
         
@@ -18,10 +18,10 @@ class SUAppcastItemTests_isInformationOnlyUpdate: SUAppcastItemBaseTests {
         let actualInformationOnlyUpdate = item.isInformationOnlyUpdate
         
         // Assert
-        XCTAssertFalse(actualInformationOnlyUpdate)
+        #expect(!actualInformationOnlyUpdate)
     }
     
-    func test_isInformationOnlyUpdate_stateWithInformationOnlyUpdate_isTrue() throws {
+    @Test func isInformationOnlyUpdate_stateWithInformationOnlyUpdate_isTrue() throws {
         let expectedResolvedState = SPUAppcastItemState(withMajorUpgrade: false, criticalUpdate: true, informationalUpdate: true, minimumOperatingSystemVersionIsOK: false, maximumOperatingSystemVersionIsOK: false)
         
         let dict = self.createBasicAppcastItemDictionary()
@@ -31,6 +31,6 @@ class SUAppcastItemTests_isInformationOnlyUpdate: SUAppcastItemBaseTests {
         let actualInformationOnlyUpdate = item.isInformationOnlyUpdate
         
         // Assert
-        XCTAssertTrue(actualInformationOnlyUpdate)
+        #expect(actualInformationOnlyUpdate)
     }
 }
