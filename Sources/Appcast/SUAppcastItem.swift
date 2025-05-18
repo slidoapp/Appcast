@@ -524,7 +524,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         let descriptionDict = dict[SURSSElement.Description] as? SUAppcast.AttributesDictionary
         
         self.itemDescription = descriptionDict?["content"] as? String
-        self.itemDescriptionFormat = descriptionDict?["format"] as? String ?? self.itemDescription != nil ? "html" : nil
+        self.itemDescriptionFormat = descriptionDict?["format"] as? String ?? (self.itemDescription != nil ? "html" : nil)
         
         if let infoUrlString = dict[SURSSElement.Link] as? String {
             guard let infoUrl = URL(string: infoUrlString, relativeTo: appcastURL) else {
