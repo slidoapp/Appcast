@@ -3,11 +3,12 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Foundation
+import Testing
 @testable import Appcast
 
-final class SUAppcastTests: XCTestCase {
-    func test_init_simpleAppcastFile() throws {
+struct SUAppcastTests {
+    @Test func init_simpleAppcastFile() throws {
         // Arrange
         let expectedItemsCount = 1
         
@@ -20,10 +21,10 @@ final class SUAppcastTests: XCTestCase {
         let actualItemsCount = appcast.items.count
         
         // Assert
-        XCTAssertEqual(actualItemsCount, expectedItemsCount)
+        #expect(actualItemsCount == expectedItemsCount)
     }
     
-    func test_items_simpleAppcast_createsAppcastItem() throws {
+    @Test func items_simpleAppcast_createsAppcastItem() throws {
         // Arrange
         let appcastResource = Bundle.module.url(forResource: "appcast_simple", withExtension: "xml")!
         let appcastData = try Data(contentsOf: appcastResource)
@@ -34,8 +35,8 @@ final class SUAppcastTests: XCTestCase {
         let actualAppcastItem = appcast.items.first
         
         // Assert
-        XCTAssertNotNil(actualAppcastItem)
-        XCTAssertEqual(actualAppcastItem?.title, "Version 2.0")
-        XCTAssertEqual(actualAppcastItem?.versionString, "2.0")
+        #expect(actualAppcastItem != nil)
+        #expect(actualAppcastItem?.title == "Version 2.0")
+        #expect(actualAppcastItem?.versionString == "2.0")
     }
 }
