@@ -51,7 +51,7 @@ jobs:
       id: results-unit-tests
       with:
         name: 'results-unit-tests-${{ matrix.swift }}'
-        path: reports/AppcastTests.xml
+        path: reports/AppcastTests-swift-testing.xml
         reporter: swift-xunit
         fail-on-error: true
   
