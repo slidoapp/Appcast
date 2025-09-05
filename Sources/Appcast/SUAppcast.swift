@@ -12,17 +12,21 @@ public struct SUAppcast: Sendable {
     internal static let empty = SUAppcast()
     
     public var items: [SUAppcastItem]
+    public var namespaces: [String: String]
 
     internal init() {
         self.items = []
+        self.namespaces = [:]
     }
     
     internal init(items: [SUAppcastItem]) {
         self.items = items
+        self.namespaces = [:]
     }
 
     public init(xmlData appcastData: Data, relativeTo: URL?, stateResolver: SPUAppcastItemStateResolver?) throws {
         self.items = []
+        self.namespaces = [:]
         
         let document = try XMLDocument(data: appcastData, options: .nodeLoadExternalEntitiesNever)
         let xmlItems = try document.nodes(forXPath: "/rss/channel/item")
@@ -43,8 +47,22 @@ public struct SUAppcast: Sendable {
 //            }
 //        }
         
+        guard let rootNode = document.rootElement() else {
+            return
+        }
+        
+        for namespace in rootNode.namespaces ?? [] {
+            let namespaceName = namespace.localName
+            let namespaceUri = namespace.stringValue
+            
+            if let name = namespaceName {
+                self.namespaces[name] = namespaceUri
+            }
+        }
+        
         for item in xmlItems {
             var dict = SUAppcastItemProperties()
+            var extensions = SUAppcastItemExtensions()
             var nodesDict = [String: [XMLNode]]()
             
             if item.childCount > 0 {
@@ -159,14 +177,16 @@ public struct SUAppcast: Sendable {
                 }
                 else {
                     // add all other values as strings
-                    if let stringValue = node.stringValue?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) {
-                        dict[name] = stringValue
-                    }
+                    let stringValue = node.stringValue?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                    let attributes = self.attributes(of: node)
+                    
+                    let elm = SUAppcastItemExtension(name: name, value: stringValue, attributes: attributes)
+                    extensions[name] = elm
                 }
             }
             
             
-            let appcastItem = try SUAppcastItem(dictionary: dict, relativeTo: relativeTo, stateResolver: stateResolver, resolvedState: nil)
+            let appcastItem = try SUAppcastItem(dictionary: dict, extensions: extensions, relativeTo: relativeTo, stateResolver: stateResolver, resolvedState: nil)
             
             self.items.append(appcastItem)
         }

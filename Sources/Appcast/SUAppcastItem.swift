@@ -8,6 +8,26 @@
 import Foundation
 
 public typealias SUAppcastItemProperties = [String: any Sendable]
+public typealias SUAppcastItemExtensions = [String: SUAppcastItemExtension]
+
+public struct SUAppcastItemExtension: Sendable, Equatable {
+    public let name: String
+    public let value: String?
+    
+    public let attributes: [String: String]
+    
+    init(name: String, value: String?) {
+        self.name = name
+        self.value = value
+        self.attributes = [:]
+    }
+    
+    init(name: String, value: String?, attributes: [String: String]) {
+        self.name = name
+        self.value = value
+        self.attributes = attributes
+    }
+}
 
 /// The appcast item describing an update in the application's appcast feed.
 ///
@@ -414,7 +434,7 @@ public struct SUAppcastItem: Sendable, Equatable {
     //
     //  This is useful for querying custom extensions or elements from the appcast item.
     //  */
-    // public let propertiesDictionary: SUAppcastItemProperties
+    public let extensions: SUAppcastItemExtensions
     
     
     // MARK: private members
@@ -462,7 +482,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         self._hasCriticalInformation = false
         self._informationalUpdateVersions = Set<String>()
         
-        // self.propertiesDictionary = SUAppcastItemProperties()
+        self.extensions = .init()
         
         // set public properties
         self.versionString = ""
@@ -497,9 +517,13 @@ public struct SUAppcastItem: Sendable, Equatable {
     
     // MARK: private functions
     public init(dictionary dict: SUAppcastItemProperties, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
+        try self.init(dictionary: dict, extensions: .init(), relativeTo: appcastURL, stateResolver: stateResolver, resolvedState: resolvedState)
+    }
+
+    public init(dictionary dict: SUAppcastItemProperties, extensions: SUAppcastItemExtensions, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
         self._informationalUpdateVersions = Set<String>()
         
-        // self.propertiesDictionary = dict
+        self.extensions = extensions
         
         self.title = dict[SURSSElement.Title] as? String
         
