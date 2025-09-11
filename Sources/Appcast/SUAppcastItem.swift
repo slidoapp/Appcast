@@ -591,10 +591,15 @@ public struct SUAppcastItem: Sendable, Equatable {
         }
         
         // Grab critical update information
-        let criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
+        var criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
         let tags = dict[SUAppcastElement.Tags] as? [String]
         let hasCriticalTag = tags?.contains(SUAppcastElement.CriticalUpdate) ?? false
-        self._hasCriticalInformation = criticalUpdateDict != nil || hasCriticalTag
+        if hasCriticalTag {
+            // Legacy path where critical update used to be a tag without a specified version
+            criticalUpdateDict = .init()
+        }
+        
+        self._hasCriticalInformation = criticalUpdateDict != nil
         
         if let stateResolver {
             self._state = stateResolver.resolveState(informationalUpdateVersions: self._informationalUpdateVersions, minimumOperatingSystemVersion: self.minimumSystemVersion, maximumOperatingSystemVersion: self.maximumSystemVersion, minimumAutoupdateVersion: self.minimumAutoupdateVersion, criticalUpdateDictionary: criticalUpdateDict)

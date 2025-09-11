@@ -54,7 +54,6 @@ class SUAppcastParserTest: XCTestCase {
         XCTAssertEqual("desc3", actualItem.itemDescription)
         XCTAssertEqual("html", actualItem.itemDescriptionFormat)
         XCTAssertNil(actualItem.dateString)
-        // TODO: legacy critical update information inside <sparkle:tags> element is not implemented yet
         XCTAssertTrue(actualItem.isCriticalUpdate)
         XCTAssertEqual(actualItem.phasedRolloutInterval, 86400)
         XCTAssertEqual(actualItem.versionString, "3.0")
