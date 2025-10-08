@@ -1,9 +1,16 @@
-/results
-.DS_Store
-/.build
-/Packages
+### Swift ###
+Packages
+.build/
 xcuserdata/
 DerivedData/
+
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-.netrc
+
+# tests reports
+reports/
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
