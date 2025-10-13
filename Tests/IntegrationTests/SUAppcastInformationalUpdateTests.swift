@@ -6,7 +6,7 @@ import XCTest
 @testable import Appcast
 
 class SUAppcastInformationalUpdateTests: XCTestCase {
-    func testInformationalUpdateVersions() {
+    func testInformationalUpdatesFromVersion1_0() {
         let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
         
         do {
@@ -33,6 +33,20 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 }
             }
             
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testInformationalUpdatesFromVersion2_3() {
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator.default
+            
             // Test informational updates from version 2.3
             do {
                 let hostVersion = "2.3"
@@ -42,6 +56,20 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 
                 XCTAssertFalse(appcast.items[1].isInformationOnlyUpdate)
             }
+            
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testInformationalUpdatesFromVersion2_4() {
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator.default
             
             // Test informational updates from version 2.4
             do {
@@ -53,6 +81,20 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 XCTAssertTrue(appcast.items[1].isInformationOnlyUpdate)
             }
             
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testInformationalUpdatesFromVersion2_5() {
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator.default
+            
             // Test informational updates from version 2.5
             do {
                 let hostVersion = "2.5"
@@ -62,6 +104,20 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 
                 XCTAssertTrue(appcast.items[1].isInformationOnlyUpdate)
             }
+            
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testInformationalUpdatesFromVersion2_6() {
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator.default
             
             // Test informational updates from version 2.6
             do {
@@ -73,6 +129,20 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 XCTAssertFalse(appcast.items[1].isInformationOnlyUpdate)
             }
             
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testInformationalUpdatesFromVersion0_5() {
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator.default
+            
             // Test informational updates from version 0.5
             do {
                 let hostVersion = "0.5"
@@ -83,6 +153,20 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 XCTAssertFalse(appcast.items[1].isInformationOnlyUpdate)
             }
             
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testInformationalUpdatesFromVersion0_4() {
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator.default
+            
             // Test informational updates from version 0.4
             do {
                 let hostVersion = "0.4"
@@ -92,6 +176,20 @@ class SUAppcastInformationalUpdateTests: XCTestCase {
                 
                 XCTAssertTrue(appcast.items[1].isInformationOnlyUpdate)
             }
+            
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testInformationalUpdatesFromVersion0_0() {
+        let testURL = Bundle.module.url(forResource: "testappcast_info_updates", withExtension: "xml")!
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator.default
             
             // Test informational updates from version 0.0
             do {
