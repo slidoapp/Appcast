@@ -12,17 +12,21 @@ public struct SUAppcast: Sendable {
     internal static let empty = SUAppcast()
     
     public var items: [SUAppcastItem]
+    public var namespaces: [String: String]
 
     internal init() {
         self.items = []
+        self.namespaces = [:]
     }
     
     internal init(items: [SUAppcastItem]) {
         self.items = items
+        self.namespaces = [:]
     }
 
     public init(xmlData appcastData: Data, relativeTo: URL?, stateResolver: SPUAppcastItemStateResolver?) throws {
         self.items = []
+        self.namespaces = [:]
         
         let document = try XMLDocument(data: appcastData, options: .nodeLoadExternalEntitiesNever)
         let xmlItems = try document.nodes(forXPath: "/rss/channel/item")
@@ -42,6 +46,19 @@ public struct SUAppcast: Sendable {
 //                node = [node nextSibling];
 //            }
 //        }
+        
+        guard let rootNode = document.rootElement() else {
+            return
+        }
+        
+        for namespace in rootNode.namespaces ?? [] {
+            let namespaceName = namespace.localName
+            let namespaceUri = namespace.stringValue
+            
+            if let name = namespaceName {
+                self.namespaces[name] = namespaceUri
+            }
+        }
         
         for item in xmlItems {
             var dict = SUAppcastItemProperties()
