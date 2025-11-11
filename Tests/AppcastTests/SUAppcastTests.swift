@@ -65,4 +65,35 @@ final class SUAppcastTests: XCTestCase {
         XCTAssertEqual(components.minute, 20)
         XCTAssertEqual(components.second, 11)
     }
+    
+    func test_copyByFilteringItems_filterByVersionValue_returnsSingleItem() throws {
+        // Arrange
+        let appcastResource = Bundle.module.url(forResource: "appcast_simple", withExtension: "xml")!
+        let appcastData = try Data(contentsOf: appcastResource)
+        
+        let appcast = try SUAppcast(xmlData: appcastData, relativeTo: nil, stateResolver: nil)
+        
+        // Act - filter to only items with version "2.0"
+        let filteredAppcast = appcast.copyByFilteringItems { item in
+            item.versionString == "2.0"
+        }
+        
+        // Assert
+        XCTAssertEqual(filteredAppcast.items.count, 1)
+        XCTAssertEqual(filteredAppcast.items.first?.versionString, "2.0")
+    }
+    
+    func test_copyByFilteringItems_filterIsFalsePredicate_returnsNoneItems() throws {
+        // Arrange
+        let appcastResource = Bundle.module.url(forResource: "appcast_simple", withExtension: "xml")!
+        let appcastData = try Data(contentsOf: appcastResource)
+        
+        let appcast = try SUAppcast(xmlData: appcastData, relativeTo: nil, stateResolver: nil)
+        
+        // Act - filter to empty
+        let emptyAppcast = appcast.copyByFilteringItems { _ in false }
+        
+        // Assert
+        XCTAssertEqual(emptyAppcast.items.count, 0)
+    }
 }

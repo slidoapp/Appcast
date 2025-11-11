@@ -245,4 +245,12 @@ public struct SUAppcast: Sendable {
 
         return dictionary
     }
+    
+    /// Creates a copy of the appcast with a filtered subset of items
+    /// - Parameter filterBlock: A closure that takes an SUAppcastItem and returns true if it should be included
+    /// - Returns: A new SUAppcast instance containing only the items that pass the filter
+    public func copyByFilteringItems(_ filterBlock: (SUAppcastItem) -> Bool) -> SUAppcast {
+        let filteredItems = items.filter(filterBlock)
+        return SUAppcast(items: filteredItems)
+    }
 }
