@@ -124,50 +124,50 @@ class SUAppcastPhasedGroupRolloutsTests: XCTestCase {
                         XCTAssertEqual(0, supportedAppcast.items.count)
                     }
                 }
+            }
+
+            // Test critical updates which ignore phased rollouts
+            do {
+                let hostVersion = "2.0"
                 
-                // Test critical updates which ignore phased rollouts
+                let stateResolver = SPUAppcastItemStateResolver(hostVersion: hostVersion, applicationVersionComparator: versionComparator, standardVersionComparator: versionComparator)
+                let appcast = try SUAppcast(xmlData: testData, relativeTo: nil, stateResolver: stateResolver)
+                
                 do {
-                    let hostVersion = "2.0"
+                    // Test no group
+                    let group: NSNumber? = nil
+                    let currentDate = Date()
+                    let supportedAppcast = SUAppcastDriver.filterSupportedAppcast(appcast, phasedUpdateGroup: group, skippedUpdate: nil, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator, testOSVersion: true, testMinimumAutoupdateVersion: true)
                     
-                    let stateResolver = SPUAppcastItemStateResolver(hostVersion: hostVersion, applicationVersionComparator: versionComparator, standardVersionComparator: versionComparator)
-                    let appcast = try SUAppcast(xmlData: testData, relativeTo: nil, stateResolver: stateResolver)
+                    XCTAssertEqual(2, supportedAppcast.items.count)
+                    XCTAssertEqual("3.0", supportedAppcast.items[0].versionString)
+                }
+                
+                do {
+                    let currentDate = dateFormatter.date(from: "Wed, 23 Jul 2014 15:20:11 +0000")!
                     
                     do {
-                        // Test no group
-                        let group: NSNumber? = nil
-                        let currentDate = Date()
+                        // Test group 0 with current date 3 days before rollout
+                        let group = 0 as NSNumber
+                        
                         let supportedAppcast = SUAppcastDriver.filterSupportedAppcast(appcast, phasedUpdateGroup: group, skippedUpdate: nil, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator, testOSVersion: true, testMinimumAutoupdateVersion: true)
                         
-                        XCTAssertEqual(2, supportedAppcast.items.count)
+                        XCTAssertEqual(1, supportedAppcast.items.count)
                         XCTAssertEqual("3.0", supportedAppcast.items[0].versionString)
                     }
+                }
+                
+                do {
+                    let currentDate = dateFormatter.date(from: "Mon, 28 Jul 2014 15:20:11 +0000")!
                     
                     do {
-                        let currentDate = dateFormatter.date(from: "Wed, 23 Jul 2014 15:20:11 +0000")!
+                        // Test group 6 with current date 3 days after rollout
+                        let group = 6 as NSNumber
                         
-                        do {
-                            // Test group 0 with current date 3 days before rollout
-                            let group = 0 as NSNumber
-                            
-                            let supportedAppcast = SUAppcastDriver.filterSupportedAppcast(appcast, phasedUpdateGroup: group, skippedUpdate: nil, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator, testOSVersion: true, testMinimumAutoupdateVersion: true)
-                            
-                            XCTAssertEqual(1, supportedAppcast.items.count)
-                            XCTAssertEqual("3.0", supportedAppcast.items[0].versionString)
-                        }
-                    }
-                    
-                    do {
-                        let currentDate = dateFormatter.date(from: "Mon, 28 Jul 2014 15:20:11 +0000")!
+                        let supportedAppcast = SUAppcastDriver.filterSupportedAppcast(appcast, phasedUpdateGroup: group, skippedUpdate: nil, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator, testOSVersion: true, testMinimumAutoupdateVersion: true)
                         
-                        do {
-                            // Test group 6 with current date 3 days after rollout
-                            let group = 6 as NSNumber
-                            
-                            let supportedAppcast = SUAppcastDriver.filterSupportedAppcast(appcast, phasedUpdateGroup: group, skippedUpdate: nil, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator, testOSVersion: true, testMinimumAutoupdateVersion: true)
-                            
-                            XCTAssertEqual(1, supportedAppcast.items.count)
-                            XCTAssertEqual("3.0", supportedAppcast.items[0].versionString)
-                        }
+                        XCTAssertEqual(1, supportedAppcast.items.count)
+                        XCTAssertEqual("3.0", supportedAppcast.items[0].versionString)
                     }
                 }
             }
