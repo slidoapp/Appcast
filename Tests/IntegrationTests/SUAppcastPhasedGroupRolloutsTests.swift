@@ -6,7 +6,7 @@ import XCTest
 @testable import Appcast
 
 class SUAppcastPhasedGroupRolloutsTests: XCTestCase {
-    func testPhasedGroupRollouts() {
+    func testPhasedGroupRolloutsWithMinimumAutoupdateVersion() {
         let testURL = Bundle.module.url(forResource: "testappcast_phasedRollout", withExtension: "xml")!
         
         let dateFormatter = DateFormatter()
@@ -125,7 +125,23 @@ class SUAppcastPhasedGroupRolloutsTests: XCTestCase {
                     }
                 }
             }
-
+        } catch let err as NSError {
+            NSLog("%@", err)
+            XCTFail(err.localizedDescription)
+        }
+    }
+    
+    func testPhasedGroupRolloutsWithCriticalUpdates() {
+        let testURL = Bundle.module.url(forResource: "testappcast_phasedRollout", withExtension: "xml")!
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "E, dd MMM yyyy HH:mm:ss Z"
+        
+        do {
+            let testData = try Data(contentsOf: testURL)
+            
+            let versionComparator = SUStandardVersionComparator()
+            
             // Test critical updates which ignore phased rollouts
             do {
                 let hostVersion = "2.0"
