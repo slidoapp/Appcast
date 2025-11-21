@@ -51,3 +51,13 @@ public struct SURSSAttribute {
     public static let URL = "url"
     public static let Length = "length"
 }
+
+/// Shared DateFormatter for parsing appcast pubDate strings
+/// Format: "E, dd MMM yyyy HH:mm:ss Z" (RFC 2822)
+/// Example: "Sat, 26 Jul 2014 15:20:11 +0000"
+internal let appcastDateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US")
+    formatter.dateFormat = "E, dd MMM yyyy HH:mm:ss Z"
+    return formatter
+}()

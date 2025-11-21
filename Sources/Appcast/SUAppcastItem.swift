@@ -637,7 +637,13 @@ public struct SUAppcastItem: Sendable, Equatable {
             self.fullReleaseNotesURL = nil
         }
         
-        self.date = nil
+        // Parse date from dateString using RFC 2822 format
+        if let dateString = self.dateString {
+            self.date = appcastDateFormatter.date(from: dateString)
+        } else {
+            self.date = nil
+        }
+        
         self.installationType = ""
         self.deltaUpdates = [String: SUAppcastItem]()
         self.deltaFromSparkleLocales = ["en"]
