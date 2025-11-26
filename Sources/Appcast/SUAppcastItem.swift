@@ -639,7 +639,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         
         // Parse date from dateString using RFC 2822 format
         if let dateString = self.dateString {
-            self.date = appcastDateFormatter.date(from: dateString)
+            self.date = parseAppcastItemPubDate(from: dateString)
         } else {
             self.date = nil
         }
