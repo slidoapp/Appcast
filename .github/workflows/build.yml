@@ -13,17 +13,14 @@ jobs:
   build:
     strategy:
       matrix:
-        swift: ['swift6.0', 'swift5.10', 'swift5.9']
+        swift: ['swift-6.1', 'swift-6.2']
         include:
-          - swift: 'swift6.0'
-            xcode-path: '/Applications/Xcode_16.1.0.app'
+          - swift: 'swift-6.1'
+            xcode-path: '/Applications/Xcode_16.4.0.app'
             macos: 'macos-15'
-          - swift: 'swift5.10'
-            xcode-path: '/Applications/Xcode_15.4.0.app'
-            macos: 'macos-14'
-          - swift: 'swift5.9'
-            xcode-path: '/Applications/Xcode_15.2.0.app'
-            macos: 'macos-14'
+          - swift: 'swift-6.2'
+            xcode-path: '/Applications/Xcode_26.2.0.app'
+            macos: 'macos-15'
     
     env:
       DEVELOPER_DIR: ${{ matrix.xcode-path }}
