@@ -12,6 +12,7 @@ permissions:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         swift: ['swift-6.1', 'swift-6.2']
         include:
