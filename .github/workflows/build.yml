@@ -39,7 +39,7 @@ jobs:
       run: swift --version
 
     - name: build
-      run: swift build -v
+      run: swift build -v --build-tests
 
     - name: reports directory
       run: mkdir reports
