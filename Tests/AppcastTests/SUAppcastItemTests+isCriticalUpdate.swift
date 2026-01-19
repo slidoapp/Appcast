@@ -3,12 +3,12 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
-class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
+final class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
     // MARK: isCriticalUpdate() tests
-    func test_isCriticalUpdate_nilState_isFalseByDefault() throws {
+    @Test func isCriticalUpdate_nilState_isFalseByDefault() throws {
         // Arrange
         let expectedResolvedState: SPUAppcastItemState? = nil
         let dict = self.createBasicAppcastItemDictionary()
@@ -19,10 +19,10 @@ class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
         let actualCriticalUpdate = item.isCriticalUpdate
         
         // Assert
-        XCTAssertFalse(actualCriticalUpdate)
+        #expect(!actualCriticalUpdate)
     }
     
-    func test_isCriticalUpdate_stateWithCriticalUpdate_isTrue() throws {
+    @Test func isCriticalUpdate_stateWithCriticalUpdate_isTrue() throws {
         // Arrange
         let expectedResolvedState = SPUAppcastItemState(withMajorUpgrade: false, criticalUpdate: true, informationalUpdate: false, minimumOperatingSystemVersionIsOK: false, maximumOperatingSystemVersionIsOK: false)
         let dict = self.createBasicAppcastItemDictionary()
@@ -33,10 +33,10 @@ class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
         let actualCriticalUpdate = item.isCriticalUpdate
         
         // Assert
-        XCTAssertTrue(actualCriticalUpdate)
+        #expect(actualCriticalUpdate)
     }
     
-    func test_isCriticalUpdate_dictionaryWithCriticalUpdateInformation_isTrue() throws {
+    @Test func isCriticalUpdate_dictionaryWithCriticalUpdateInformation_isTrue() throws {
         // Arrange
         let dict = self.createAppcastItemWithCriticalUpdateDictionary()
 
@@ -46,10 +46,10 @@ class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
         let actualCriticalUpdate = item.isCriticalUpdate
         
         // Assert
-        XCTAssertTrue(actualCriticalUpdate)
+        #expect(actualCriticalUpdate)
     }
     
-    func test_isCriticalUpdate_legacyCriticalUpdateInformationInTag_isTrue() throws {
+    @Test func isCriticalUpdate_legacyCriticalUpdateInformationInTag_isTrue() throws {
         // Arrange
         let dict = self.createAppcastItemWithLegacyTagWithCriticalUpdateDictionary()
 
@@ -59,8 +59,8 @@ class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
         let actualCriticalUpdate = item.isCriticalUpdate
         
         // Assert
-        try XCTSkipUnless(actualCriticalUpdate, "Legacy format of critical updates in the <sparkle:tags> element are not supported.")
-        XCTAssertTrue(actualCriticalUpdate)
+        //try XCTSkipUnless(actualCriticalUpdate, "Legacy format of critical updates in the <sparkle:tags> element are not supported.")
+        #expect(actualCriticalUpdate)
     }
     
     // MARK: - helper functions

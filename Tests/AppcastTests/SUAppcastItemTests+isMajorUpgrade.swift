@@ -3,12 +3,12 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
-class SUAppcastItemTests_isMajorUpgrade: SUAppcastItemBaseTests {
+final class SUAppcastItemTests_isMajorUpgrade: SUAppcastItemBaseTests {
     // MARK: isMajorUpgrade() tests
-    func test_isMajorUpgrade_noResolvedState_isFalseByDefault() throws {
+    @Test func isMajorUpgrade_noResolvedState_isFalseByDefault() throws {
         let expectedResolvedState: SPUAppcastItemState? = nil
         let dict = self.createBasicAppcastItemDictionary()
         
@@ -18,10 +18,10 @@ class SUAppcastItemTests_isMajorUpgrade: SUAppcastItemBaseTests {
         let actualMajorUpgrade = item.isMajorUpgrade
         
         // Assert
-        XCTAssertFalse(actualMajorUpgrade)
+        #expect(!actualMajorUpgrade, "Appcast item must hase isMajorUpgrade set to false")
     }
     
-    func test_isMajorUpgrade_stateWithMajorUpgrade_isTrue() throws {
+    @Test func isMajorUpgrade_stateWithMajorUpgrade_isTrue() throws {
         let expectedResolvedState = SPUAppcastItemState(withMajorUpgrade: true, criticalUpdate: false, informationalUpdate: false, minimumOperatingSystemVersionIsOK: false, maximumOperatingSystemVersionIsOK: false)
         
         let dict = self.createBasicAppcastItemDictionary()
@@ -31,6 +31,6 @@ class SUAppcastItemTests_isMajorUpgrade: SUAppcastItemBaseTests {
         let actualMajorUpgrade = item.isMajorUpgrade
         
         // Assert
-        XCTAssertTrue(actualMajorUpgrade)
+        #expect(actualMajorUpgrade, "Appcast item must hase isMajorUpgrade set to true")
     }
 }
