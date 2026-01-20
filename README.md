@@ -10,7 +10,7 @@ Appcast library is a Swift package to work with Sparkle compatible appcast files
 
 ## Installation
 
-Requires Swift 6.1 (Xcode 16.4 or newer).
+Requires Swift 5.10 or 6.1 (Xcode 16.4 or newer).
 
 
 ### Swift Package Manager
