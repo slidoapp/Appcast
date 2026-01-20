@@ -96,10 +96,10 @@ public struct SUAppcastItem: Sendable, Equatable {
      */
     public var isInformationOnlyUpdate: Bool {
         if let state = self._state {
-            return state.informationalUpdate;
-        } else {
-            return self._informationalUpdateVersions?.count == 0;
+            return state.informationalUpdate
         }
+
+        return self._informationalUpdateVersions?.isEmpty ?? false
     }
 
     /**
@@ -401,11 +401,7 @@ public struct SUAppcastItem: Sendable, Equatable {
      An update item is a delta update if it is in the `deltaUpdates` of another update item.
      */
     public var isDeltaUpdate: Bool {
-        guard let _ = self.rssEnclosure[SUAppcastAttribute.DeltaFrom] else {
-            return false
-        }
-        
-        return true
+        self.rssEnclosure[SUAppcastAttribute.DeltaFrom] != nil
     }
 
     // TODO: Figure out how to propagate extension elements compatible with Sendable & Equatable protocols.
@@ -541,8 +537,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         }
         
         // Need an info URL or an enclosure URL. Former to show "More Info"
-        //    page, latter to download & install:
-        // TODO: add check
+        // page, latter to download & install.
         
         if self.infoURL != nil {
             self._informationalUpdateVersions = enclosure != nil ? dict[SUAppcastElement.InformationalUpdate] as? InformationalUpdateType : InformationalUpdateType()
@@ -560,6 +555,10 @@ public struct SUAppcastItem: Sendable, Equatable {
             self.fileURL = nil
         }
 
+        guard self.infoURL != nil || self.fileURL != nil else {
+            throw AppcastItemError.missingEnclosureOrInfoLink("Appcast feed item must include either a <link> or an <enclosure url> element.")
+        }
+
         self.contentLength = max(0, enclosureLength)
 
         self.osString = enclosure?[SUAppcastAttribute.OsType]
@@ -570,25 +569,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         
         self.ignoreSkippedUpgradesBelowVersion = dict[SUAppcastElement.IgnoreSkippedUpgradesBelowVersion] as? String
         
-        if let channel = dict[SUAppcastElement.Channel] as? String {
-            if channel.isEmpty {
-                self.channel = nil
-            }
-            else {
-                let validCharacters = NSMutableCharacterSet.alphanumeric()
-                validCharacters.addCharacters(in: "_.-")
-
-                // Reject characters in the channel name that may cause parsing problems in tools later
-                if let _ = channel.rangeOfCharacter(from: validCharacters.inverted) {
-                    self.channel = nil
-                }
-                else {
-                    self.channel = channel
-                }
-            }
-        } else {
-            self.channel = nil
-        }
+        self.channel = Self.parseChannel(dict)
         
         // Grab critical update information
         var criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
@@ -608,7 +589,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         }
         
         let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
-                self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
+        self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
         
         // Sparkle 1.0.0 supports the `<enclosure shortVersionString="">` attribute
         var shortVersionString = enclosure?[SUAppcastAttribute.ShortVersionString] as? String
@@ -650,7 +631,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         self.deltaFromSparkleExecutableSize = 0
     }
     
-    func parseChannel(_ dict: [String: Any]) -> String? {
+    private static func parseChannel(_ dict: SUAppcastItemProperties) -> String? {
         guard let channel = dict[SUAppcastElement.Channel] as? String,
               !channel.isEmpty else {
             return nil
@@ -659,7 +640,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         var channelAllowedCharacterSet = CharacterSet.alphanumerics
         channelAllowedCharacterSet.insert(charactersIn: "_.-")
         
-        if channel.rangeOfCharacter(from: channelAllowedCharacterSet.inverted) != .none {
+        if channel.rangeOfCharacter(from: channelAllowedCharacterSet.inverted) != nil {
             return nil
         }
         
@@ -669,5 +650,6 @@ public struct SUAppcastItem: Sendable, Equatable {
 
 enum AppcastItemError: Error {
     case missingVersion(String)
+    case missingEnclosureOrInfoLink(String)
     case invalidInfoLink(String)
 }

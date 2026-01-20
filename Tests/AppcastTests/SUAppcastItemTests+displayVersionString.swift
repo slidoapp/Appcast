@@ -65,8 +65,10 @@ class SUAppcastItemTests_displayVersionString: SUAppcastItemBaseTests {
     }
     
     func createLegacyAppcastItemWithEnclosureShortVersionString(sparkleVersion: String, sparkleShortVersion: String) throws -> SUAppcastItem {
-        var enclosure = SUAppcastItemProperties()
+        var enclosure: SUAppcast.AttributesDictionary = [:]
         enclosure[SUAppcastAttribute.ShortVersionString] = sparkleShortVersion
+        enclosure[SURSSAttribute.URL] = "https://example.com/Acme.zip"
+        enclosure[SURSSAttribute.Length] = "1478492"
         
         var dict = self.createBasicAppcastItemDictionary()
         
