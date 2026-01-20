@@ -90,7 +90,7 @@ public struct SUStandardVersionComparator: SUVersionComparison, Sendable {
         var newType: SUCharacterType
         var parts: [String] = []
         
-        if version.count == 0 {
+        if version.isEmpty {
             // Nothing to do here
             return []
         }
