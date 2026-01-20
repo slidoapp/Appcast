@@ -12,6 +12,7 @@ permissions:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         swift: ['swift-6.1', 'swift-6.2']
         include:
@@ -45,13 +46,13 @@ jobs:
       run: swift test --filter='AppcastTests' --parallel --xunit-output reports/AppcastTests.xml
   
     - name: report unit test results
-      uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
+      uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
       if: always()
       id: results-unit-tests
       with:
         name: 'results-unit-tests-${{ matrix.swift }}'
         path: reports/AppcastTests.xml
-        reporter: java-junit
+        reporter: swift-xunit
         fail-on-error: true
   
     - name: run integration tests
@@ -59,13 +60,13 @@ jobs:
       run: swift test --filter='IntegrationTests' --parallel --xunit-output reports/IntegrationTests.xml || true
 
     - name: report integration test results
-      uses: dorny/test-reporter@afe6793191b75b608954023a46831a3fe10048d4
+      uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
       if: always()
       id: results-integration-tests
       with:
         name: 'results-integration-tests-${{ matrix.swift }}'
         path: reports/IntegrationTests.xml
-        reporter: java-junit
+        reporter: swift-xunit
         fail-on-error: false
   
     - name: summary
