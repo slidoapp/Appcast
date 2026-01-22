@@ -115,7 +115,7 @@ class SUAppcastDriverTests: XCTestCase {
 extension SUAppcastDriver {
     public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: inout SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem? {
         let item = SUAppcastDriver.bestItem(fromAppcastItems: fromAppcastItems, getDeltaItem: getDeltaItem, withHostVersion: withHostVersion, comparator: comparator)
-        if let item, getDeltaItem != nil {
+        if let item {
             getDeltaItem = deltaUpdate(from: item, hostVersion: withHostVersion)
         }
         return item
