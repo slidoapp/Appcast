@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// A class for containing downloaded data along with some information about it.
+/// A struct for containing downloaded data along with some information about it.
 public struct SPUDownloadData: Sendable {
     public let data: Data
     public let URL: URL
