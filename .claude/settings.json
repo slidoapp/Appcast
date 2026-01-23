@@ -3,6 +3,14 @@
     "allow": [
       "Bash(swift build:*)",
       "Bash(swift test:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh issue close:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
       "WebFetch(domain:sparkle-project.org)"
     ]
   }
