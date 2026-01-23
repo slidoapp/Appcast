@@ -11,6 +11,8 @@
       "Bash(gh issue close:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
       "WebFetch(domain:sparkle-project.org)"
     ]
   }
