@@ -52,6 +52,10 @@ public struct SURSSAttribute {
     public static let Length = "length"
 }
 
+public struct SparkleProject {
+    public static let Namespace = "http://www.andymatuschak.org/xml-namespaces/sparkle"
+}
+
 /// Parses the `<pubDate>` string value to a `Date` object.
 ///
 /// The expected format is RFC 2822: `"E, dd MMM yyyy HH:mm:ss Z"`.

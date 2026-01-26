@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:slido="https://www.slido.com/sparkle">
+  <channel>
+    <title>Testing custom extension elements and attributes.</title>
+    <item>
+        <title>Version 1.0</title>
+        <sparkle:version>1.0</sparkle:version>
+        <description>Release with companion PowerPoint extension.</description>
+        <enclosure url="https://example.org/SlidoMainApp.zip" length="1346234" />
+        <slido:ppam url="https://example.org/SlidoPowerPointAddin.zip" signature="..." />
+        <slido:powerpoint>16.0</slido:powerpoint>
+    </item>
+  </channel>
+</rss>

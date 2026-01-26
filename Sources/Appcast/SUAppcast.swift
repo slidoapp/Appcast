@@ -62,6 +62,7 @@ public struct SUAppcast: Sendable {
         
         for item in xmlItems {
             var dict = SUAppcastItemProperties()
+            var extensions = SUAppcastItemExtensions()
             var nodesDict = [String: [XMLNode]]()
             
             if item.childCount > 0 {
@@ -175,15 +176,26 @@ public struct SUAppcast: Sendable {
                     dict[name] = informationalUpdateVersions
                 }
                 else {
-                    // add all other values as strings
-                    if let stringValue = node.stringValue?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) {
-                        dict[name] = stringValue
+                    // Only elements in non-Sparkle namespaces are treated as custom extensions.
+                    // Elements in the Sparkle namespace (and non-namespaced RSS elements) are part of the appcast schema.
+                    if node.uri == nil || node.isSparkleNode {
+                        // add all other values as strings
+                        if let stringValue = node.stringValue?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) {
+                            dict[name] = stringValue
+                        }
+                    } else {
+                        // add XML elements from custom namespace as Appcast item extensions
+                        let stringValue = node.stringValue?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                        let attributes = self.attributes(of: node)
+
+                        let elm = SUAppcastItemExtension(name: name, value: stringValue, attributes: attributes)
+                        extensions[name] = elm
                     }
                 }
             }
             
             
-            let appcastItem = try SUAppcastItem(dictionary: dict, relativeTo: relativeTo, stateResolver: stateResolver, resolvedState: nil)
+            let appcastItem = try SUAppcastItem(dictionary: dict, extensions: extensions, relativeTo: relativeTo, stateResolver: stateResolver, resolvedState: nil)
             
             self.items.append(appcastItem)
         }
@@ -192,7 +204,7 @@ public struct SUAppcast: Sendable {
     func sparkleNamespacedName(of node: XMLNode) -> String? {
         // XML namespace prefix is semantically meaningless, so compare namespace URI
         // NS URI isn't used to fetch anything, and must match exactly, so we look for http:// not https://
-        if node.uri == "http://www.andymatuschak.org/xml-namespaces/sparkle" {
+        if node.isSparkleNode {
             guard let localName = node.localName else {
                 return nil
             }
