@@ -25,6 +25,32 @@ public struct SUAppcastItem: Sendable, Equatable {
     public static let empty = SUAppcastItem()
     
     /**
+     Allowed characters for custom channel names.
+     
+     The allowed characters are alphanumeric characters and @c _ @c . @c -.
+     */
+    public static let allowedChannelCharacterSet: CharacterSet = {
+        var allowedCharacterSet = CharacterSet.alphanumerics
+        allowedCharacterSet.insert(charactersIn: "_.-")
+        return allowedCharacterSet
+    }()
+    
+    /**
+     Sanitizes a channel name by replacing each invalid character with @c __.
+     */
+    public static func sanitizeChannelName(_ channelName: String) -> String {
+        var sanitizedScalars = String.UnicodeScalarView()
+        for scalar in channelName.unicodeScalars {
+            if Self.allowedChannelCharacterSet.contains(scalar) {
+                sanitizedScalars.append(scalar)
+            } else {
+                sanitizedScalars.append(contentsOf: "__".unicodeScalars)
+            }
+        }
+        return String(sanitizedScalars)
+    }
+    
+    /**
      The version of the update item.
      
      Sparkle uses this property to compare update items and determine the best available update item in the `SUAppcast`.
@@ -703,11 +729,8 @@ public struct SUAppcastItem: Sendable, Equatable {
               !channel.isEmpty else {
             return nil
         }
-        
-        var channelAllowedCharacterSet = CharacterSet.alphanumerics
-        channelAllowedCharacterSet.insert(charactersIn: "_.-")
-        
-        if channel.rangeOfCharacter(from: channelAllowedCharacterSet.inverted) != nil {
+
+        if channel.rangeOfCharacter(from: Self.allowedChannelCharacterSet.inverted) != nil {
             return nil
         }
         
