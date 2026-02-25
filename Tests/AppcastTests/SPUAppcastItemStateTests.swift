@@ -3,21 +3,21 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
-class SPUAppcastItemStateTests: XCTestCase {
+struct SPUAppcastItemStateTests {
 
-    func test_init() throws {
+    @Test func init_SPUAppcastItemState() throws {
         // Arrange
         // Act
         let itemState = SPUAppcastItemState(withMajorUpgrade: true, criticalUpdate: true, informationalUpdate: true, minimumOperatingSystemVersionIsOK: true, maximumOperatingSystemVersionIsOK: true)
 
         // Assert
-        XCTAssertTrue(itemState.majorUpgrade)
-        XCTAssertTrue(itemState.criticalUpdate)
-        XCTAssertTrue(itemState.informationalUpdate)
-        XCTAssertTrue(itemState.minimumOperatingSystemVersionIsOK)
-        XCTAssertTrue(itemState.maximumOperatingSystemVersionIsOK)
+        #expect(itemState.majorUpgrade)
+        #expect(itemState.criticalUpdate)
+        #expect(itemState.informationalUpdate)
+        #expect(itemState.minimumOperatingSystemVersionIsOK)
+        #expect(itemState.maximumOperatingSystemVersionIsOK)
     }
 }

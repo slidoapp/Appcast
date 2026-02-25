@@ -3,12 +3,12 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
 /// Ensures at least one unit test will pass.
-final class AlwaysPassTests: XCTestCase {
-    func test_alwaysPass() throws {
-        XCTAssertTrue(true, "This test will always pass.")
+struct AlwaysPassTests {
+    @Test func alwaysPass() {
+        #expect(Bool(true), "This test will always pass.")
     }
 }

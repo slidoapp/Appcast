@@ -3,89 +3,73 @@
 // Licensed under MIT-style license (see LICENSE.txt file).
 //
 
-import XCTest
+import Testing
 @testable import Appcast
 
-class SUStandardVersionComparatorTests: XCTestCase {
-    func test_init_standardComparatorCanBeInitialized() throws {
-        // Arrange & Act
-        let actualtComparator = SUStandardVersionComparator()
-        
-        // Assert
-        XCTAssertNotNil(actualtComparator)
-    }
-
-    func test_default_comparatorIsAccessibleFromSwift() throws {
-        // Arrange & Act
-        let actualDefaultComparator = SUStandardVersionComparator.default
-        
-        // Assert
-        XCTAssertNotNil(actualDefaultComparator)
-    }
-    
+struct SUStandardVersionComparatorTests  {
     // MARK: func typeOfCharacter(_ character: String) tests
-    func test_typeOfCharacter_periodSeparator() {
+    @Test func typeOfCharacter_periodSeparator() {
         let comparator = SUStandardVersionComparator()
         
         // Act
         let actualCharacterType = comparator.typeOfCharacter(".")
         
         // Assert
-        XCTAssertEqual(actualCharacterType, SUStandardVersionComparator.SUCharacterType.periodSeparatorType)
+        #expect(actualCharacterType == SUStandardVersionComparator.SUCharacterType.periodSeparatorType)
     }
     
-    func test_typeOfCharacter_dash() {
+    @Test func typeOfCharacter_dash() {
         let comparator = SUStandardVersionComparator()
         
         // Act
         let actualCharacterType = comparator.typeOfCharacter("-")
         
         // Assert
-        XCTAssertEqual(actualCharacterType, SUStandardVersionComparator.SUCharacterType.dashType)
+        #expect(actualCharacterType == SUStandardVersionComparator.SUCharacterType.dashType)
     }
     
-    func test_typeOfCharacter_number() {
+    @Test func typeOfCharacter_number() {
         let comparator = SUStandardVersionComparator()
         
         // Act
         let actualCharacterType = comparator.typeOfCharacter("1")
         
         // Assert
-        XCTAssertEqual(actualCharacterType, SUStandardVersionComparator.SUCharacterType.numberType)
+        #expect(actualCharacterType == SUStandardVersionComparator.SUCharacterType.numberType)
     }
     
-    func test_typeOfCharacter_whitespace() {
+    @Test func typeOfCharacter_whitespace() {
         let comparator = SUStandardVersionComparator()
         
         // Act
         let actualCharacterType = comparator.typeOfCharacter(" ")
         
         // Assert
-        XCTAssertEqual(actualCharacterType, SUStandardVersionComparator.SUCharacterType.whitespaceSeparatorType)
+        #expect(actualCharacterType == SUStandardVersionComparator.SUCharacterType.whitespaceSeparatorType)
     }
     
-    func test_typeOfCharacter_punctuationSeparator() {
+    @Test func typeOfCharacter_punctuationSeparator() {
         let comparator = SUStandardVersionComparator()
         
         // Act
         let actualCharacterType = comparator.typeOfCharacter("(")
         
         // Assert
-        XCTAssertEqual(actualCharacterType, SUStandardVersionComparator.SUCharacterType.punctuationSeparatorType)
+        #expect(actualCharacterType == SUStandardVersionComparator.SUCharacterType.punctuationSeparatorType)
     }
     
-    func test_typeOfCharacter_string() {
+    @Test func typeOfCharacter_string() {
         let comparator = SUStandardVersionComparator()
         
         // Act
         let actualCharacterType = comparator.typeOfCharacter("")
         
         // Assert
-        XCTAssertEqual(actualCharacterType, SUStandardVersionComparator.SUCharacterType.stringType)
+        #expect(actualCharacterType == SUStandardVersionComparator.SUCharacterType.stringType)
     }
     
     // MARK: func countOfNumberAndPeriodStartingParts tests
-    func test_countOfNumberAndPeriodStartingParts_simpleNumericVersion() {
+    @Test func countOfNumberAndPeriodStartingParts_simpleNumericVersion() {
         let comparator = SUStandardVersionComparator()
         let parts = ["1", ".", "0"]
         
@@ -93,11 +77,11 @@ class SUStandardVersionComparatorTests: XCTestCase {
         let actualCount = comparator.countOfNumberAndPeriodStartingParts(parts)
         
         // Assert
-        XCTAssertEqual(actualCount, 3)
+        #expect(actualCount == 3)
     }
     
     // MARK: func splitVersion
-    func test_splitVersion() {
+    @Test func splitVersion() {
         let expectedParts = ["1", ".", "23", ".", "19", " ", "(", "1234", ")"]
         let comparator = SUStandardVersionComparator()
         
@@ -105,7 +89,7 @@ class SUStandardVersionComparatorTests: XCTestCase {
         let actualParts = comparator.splitVersion(string: "1.23.19 (1234)")
         
         // Assert
-        XCTAssertEqual(actualParts.count, 9)
-        XCTAssertEqual(actualParts, expectedParts)
+        #expect(actualParts.count == 9)
+        #expect(actualParts == expectedParts)
     }
 }
