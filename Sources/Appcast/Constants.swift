@@ -60,8 +60,7 @@ public struct SURSSAttribute {
 /// - Returns: A `Date` object if parsing succeeds, or `nil` if the format is invalid.
 internal func parseAppcastItemPubDate(from dateString: String) -> Date? {
     let formatter = DateFormatter()
-    formatter.calendar = Calendar(identifier: .gregorian)
-    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.locale = Locale(identifier: "en_US")
     formatter.dateFormat = "E, dd MMM yyyy HH:mm:ss Z"
     return formatter.date(from: dateString)
 }

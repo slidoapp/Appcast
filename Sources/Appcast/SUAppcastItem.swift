@@ -19,6 +19,9 @@ public typealias SUAppcastItemProperties = [String: any Sendable]
 /// Extended documentation and examples on using appcast item features are available at:
 /// https://sparkle-project.org/documentation/publishing/
 public struct SUAppcastItem: Sendable, Equatable {
+    private static let applicationInstallationType = "application"
+    private static let packageInstallationType = "package"
+
     /// An empty appcast item.
     /// 
     /// This may be used as a potential return value in `-[SPUUpdaterDelegate bestValidUpdateInAppcast:forUpdater:]`
@@ -268,8 +271,6 @@ public struct SUAppcastItem: Sendable, Equatable {
      This may be:
      - @c application - indicates this is a regular application update.
      - @c package - indicates this is a guided package installer update.
-     - @c interactive-package - indicates this is an interactive package installer update (deprecated; use "package" instead)
-     
      This is extracted from the @c sparkle:installationType attribute in the @c <enclosure> element.
      
      If no installation type is provided in the enclosure, the installation type is inferred from the `fileURL` file extension instead.
@@ -615,7 +616,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         }
         
         let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
-        self.phasedRolloutInterval = Int(rolloutIntervalString ?? "")
+        self.phasedRolloutInterval = rolloutIntervalString.map { ($0 as NSString).integerValue }
         
         // Sparkle 1.0.0 supports the `<enclosure shortVersionString="">` attribute
         var shortVersionString = enclosure?[SUAppcastAttribute.ShortVersionString] as? String
@@ -651,7 +652,20 @@ public struct SUAppcastItem: Sendable, Equatable {
             self.date = nil
         }
         
-        self.installationType = enclosure?[SUAppcastAttribute.InstallationType] ?? ""
+        if let attributeInstallationType = enclosure?[SUAppcastAttribute.InstallationType] {
+            let validInstallationTypes = [
+                Self.applicationInstallationType,
+                Self.packageInstallationType,
+            ]
+            guard validInstallationTypes.contains(attributeInstallationType) else {
+                throw AppcastItemError.invalidInstallationType("Feed item's enclosure has invalid \(SUAppcastAttribute.InstallationType) value '\(attributeInstallationType)'.")
+            }
+            self.installationType = attributeInstallationType
+        } else if self.fileURL?.pathExtension == "pkg" || self.fileURL?.pathExtension == "mpkg" {
+            self.installationType = Self.packageInstallationType
+        } else {
+            self.installationType = Self.applicationInstallationType
+        }
 
         var deltaUpdates: [String: SUAppcastItem] = [:]
         if let deltaEnclosures = dict[SUAppcastElement.Deltas] as? [SUAppcast.AttributesDictionary] {
@@ -742,4 +756,7 @@ enum AppcastItemError: Error {
     case missingVersion(String)
     case missingEnclosureOrInfoLink(String)
     case invalidInfoLink(String)
+    case invalidFileLink(String)
+    case informationalUpdateRejected(String)
+    case invalidInstallationType(String)
 }
