@@ -33,7 +33,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: swift version
       run: swift --version
@@ -49,7 +49,7 @@ jobs:
       run: swift test --filter='AppcastTests' --parallel --xunit-output reports/AppcastTests.xml
   
     - name: report unit test results
-      uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
+      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
       if: always()
       id: results-unit-tests
       with:
@@ -63,7 +63,7 @@ jobs:
       run: swift test --filter='IntegrationTests' --parallel --xunit-output reports/IntegrationTests.xml || true
 
     - name: report integration test results
-      uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2.3.0
+      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
       if: always()
       id: results-integration-tests
       with:
