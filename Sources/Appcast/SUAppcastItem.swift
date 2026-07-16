@@ -330,6 +330,14 @@ public struct SUAppcastItem: Sendable, Equatable {
     public let phasedRolloutInterval: Int?
 
     /**
+     Indicates the result of validating the appcast feed signature.
+
+     When validation fails, content that could present untrusted instructions to
+     users is removed and version strings are length-limited.
+     */
+    public let signingValidationStatus: SPUAppcastSigningValidationStatus
+
+    /**
      The minimum bundle version string this update requires for automatically downloading and installing updates if provided.
      
      If an application's bundle version meets this version requirement, it can install the new update item in the background automatically.
@@ -462,13 +470,12 @@ public struct SUAppcastItem: Sendable, Equatable {
         self.rssEnclosure[SUAppcastAttribute.DeltaFrom] != nil
     }
 
-    // TODO: Figure out how to propagate extension elements compatible with Sendable & Equatable protocols.
-    // /**
-    //  The dictionary representing the entire appcast item.
-    //
-    //  This is useful for querying custom extensions or elements from the appcast item.
-    //  */
-    // public let propertiesDictionary: SUAppcastItemProperties
+    /**
+     The dictionary representing the entire appcast item.
+
+     This is useful for querying custom extensions or elements from the appcast item.
+     */
+    public let propertiesDictionary: SUAppcastItemProperties
     
     
     // MARK: private members
@@ -483,6 +490,13 @@ public struct SUAppcastItem: Sendable, Equatable {
     
     // Indicates the versions we update from that are informational-only
     var _informationalUpdateVersions: InformationalUpdateType?
+
+    // Parsed signing information from the enclosure element.
+    let signatures: SUSignatures?
+
+    // Parsed signing information and expected length for external release notes.
+    let releaseNotesSignatures: SUSignatures?
+    let releaseNotesContentLength: Int64
     
     let rssEnclosure: EnclosureType
     
@@ -515,8 +529,10 @@ public struct SUAppcastItem: Sendable, Equatable {
     private init() {
         self._hasCriticalInformation = false
         self._informationalUpdateVersions = Set<String>()
-        
-        // self.propertiesDictionary = SUAppcastItemProperties()
+        self.signatures = nil
+        self.releaseNotesSignatures = nil
+        self.releaseNotesContentLength = 0
+        self.propertiesDictionary = SUAppcastItemProperties()
         
         // set public properties
         self.versionString = ""
@@ -538,6 +554,7 @@ public struct SUAppcastItem: Sendable, Equatable {
         self.channel = nil
         self.installationType = ""
         self.phasedRolloutInterval = nil
+        self.signingValidationStatus = .skipped
         self.minimumAutoupdateVersion = nil
         self.ignoreSkippedUpgradesBelowVersion = nil
         self.osString = nil
@@ -553,9 +570,44 @@ public struct SUAppcastItem: Sendable, Equatable {
     
     // MARK: private functions
     public init(dictionary dict: SUAppcastItemProperties, relativeTo appcastURL: URL?, stateResolver: SPUAppcastItemStateResolver?, resolvedState: SPUAppcastItemState?) throws {
+        try self.init(
+            dictionary: dict,
+            relativeTo: appcastURL,
+            stateResolver: stateResolver,
+            resolvedState: resolvedState,
+            signingValidationStatus: .skipped,
+            linkPolicy: .legacyAppcast
+        )
+    }
+
+    public init(
+        dictionary dict: SUAppcastItemProperties,
+        relativeTo appcastURL: URL?,
+        stateResolver: SPUAppcastItemStateResolver?,
+        resolvedState: SPUAppcastItemState?,
+        signingValidationStatus: SPUAppcastSigningValidationStatus
+    ) throws {
+        try self.init(
+            dictionary: dict,
+            relativeTo: appcastURL,
+            stateResolver: stateResolver,
+            resolvedState: resolvedState,
+            signingValidationStatus: signingValidationStatus,
+            linkPolicy: .sparkle
+        )
+    }
+
+    init(
+        dictionary dict: SUAppcastItemProperties,
+        relativeTo appcastURL: URL?,
+        stateResolver: SPUAppcastItemStateResolver?,
+        resolvedState: SPUAppcastItemState?,
+        signingValidationStatus: SPUAppcastSigningValidationStatus,
+        linkPolicy: SUAppcastLinkPolicy
+    ) throws {
         self._informationalUpdateVersions = Set<String>()
-        
-        // self.propertiesDictionary = dict
+        self.propertiesDictionary = dict
+        self.signingValidationStatus = signingValidationStatus
         
         self.title = dict[SURSSElement.Title] as? String
         
@@ -571,35 +623,76 @@ public struct SUAppcastItem: Sendable, Equatable {
         //    underscore and the last period as the version number. So name your packages like this: APPNAME_VERSION.extension.
         //    The big caveat with this is that you can't have underscores in your version strings, as that'll confuse Sparkle.
         //    Feel free to change the separator string to a hyphen or something more suited to your needs if you like.
-        guard let newVersion = enclosure?[SUAppcastAttribute.Version] ?? dict[SUAppcastElement.Version] as? String else {
+        let newVersion: String
+        if let enclosureVersion = enclosure?[SUAppcastAttribute.Version] {
+            newVersion = enclosureVersion
+        } else if let elementVersion = dict[SUAppcastElement.Version] as? String {
+            newVersion = elementVersion
+        } else if signingValidationStatus == .skipped, let enclosureURL = enclosure?[SURSSAttribute.URL] {
+            let fileComponents = enclosureURL.components(separatedBy: "_")
+            guard fileComponents.count > 1, let lastComponent = fileComponents.last else {
+                throw AppcastItemError.missingVersion("Appcast feed item lacks <version> element and version could not be deduced.")
+            }
+            newVersion = (lastComponent as NSString).deletingPathExtension
+        } else {
             throw AppcastItemError.missingVersion("Appcast feed item lacks <version> element and version could not be deduced.")
         }
         
+        let trustedVersion = signingValidationStatus == .failed
+            ? Self.sanitizeUntrustedVersionString(newVersion)
+            : newVersion
+
         self.dateString = dict[SURSSElement.PubDate] as? String
         
-        let descriptionDict = dict[SURSSElement.Description] as? SUAppcast.AttributesDictionary
-        
-        self.itemDescription = descriptionDict?["content"] as? String
-        self.itemDescriptionFormat = descriptionDict?["format"] as? String ?? (self.itemDescription != nil ? "html" : nil)
-        
-        if let infoUrlString = dict[SURSSElement.Link] as? String {
-            guard let infoUrl = URL(string: infoUrlString, relativeTo: appcastURL) else {
-                throw AppcastItemError.invalidInfoLink("Info link is not a valid URL value.")
+        if signingValidationStatus == .failed {
+            self.itemDescription = nil
+            self.itemDescriptionFormat = nil
+        } else if let descriptionDict = dict[SURSSElement.Description] as? SUAppcast.AttributesDictionary {
+            self.itemDescription = descriptionDict["content"]
+
+            if self.itemDescription != nil {
+                let descriptionFormat = descriptionDict["format"]?.lowercased()
+                if let descriptionFormat, ["plain-text", "markdown", "html"].contains(descriptionFormat) {
+                    self.itemDescriptionFormat = descriptionFormat
+                } else {
+                    self.itemDescriptionFormat = "html"
+                }
+            } else {
+                self.itemDescriptionFormat = nil
             }
-            
-            if infoUrl.scheme != "https" {
-                throw AppcastItemError.invalidInfoLink("Info link is not using secure HTTPS scheme.")
-            }
-            
-            self.infoURL = infoUrl
+        } else if let legacyDescription = dict[SURSSElement.Description] as? String {
+            self.itemDescription = legacyDescription
+            self.itemDescriptionFormat = "html"
         } else {
-            self.infoURL = nil
+            self.itemDescription = nil
+            self.itemDescriptionFormat = nil
+        }
+
+        let parsedInfoURL: URL?
+        if let infoURLString = dict[SURSSElement.Link] as? String {
+            switch linkPolicy {
+            case .legacyAppcast:
+                guard let infoURL = URL(string: infoURLString, relativeTo: appcastURL) else {
+                    throw AppcastItemError.invalidInfoLink("Info link is not a valid URL value.")
+                }
+
+                guard infoURL.scheme == "https" else {
+                    throw AppcastItemError.invalidInfoLink("Info link is not using secure HTTPS scheme.")
+                }
+
+                parsedInfoURL = infoURL
+            case .sparkle:
+                let infoURL = URL(string: infoURLString, relativeTo: appcastURL)
+                parsedInfoURL = Self.isHTTPURL(infoURL) ? infoURL : nil
+            }
+        } else {
+            parsedInfoURL = nil
         }
         
         // Need an info URL or an enclosure URL. Former to show "More Info"
         // page, latter to download & install.
         
-        if self.infoURL != nil {
+        if parsedInfoURL != nil {
             self._informationalUpdateVersions = enclosure != nil ? dict[SUAppcastElement.InformationalUpdate] as? InformationalUpdateType : InformationalUpdateType()
         } else {
             self._informationalUpdateVersions = nil
@@ -608,21 +701,37 @@ public struct SUAppcastItem: Sendable, Equatable {
         var enclosureLength: Int64 = 0
         if let enclosureURLString = enclosure?[SURSSAttribute.URL] {
             let enclosureLengthString = enclosure?[SURSSAttribute.Length] ?? ""
-            enclosureLength = Int64(enclosureLengthString) ?? 0
-            
-            self.fileURL = URL(string: enclosureURLString, relativeTo: appcastURL)
+            enclosureLength = (enclosureLengthString as NSString).longLongValue
+
+            switch linkPolicy {
+            case .legacyAppcast:
+                self.fileURL = URL(string: enclosureURLString, relativeTo: appcastURL)
+            case .sparkle:
+                let encodedURLString = enclosureURLString.replacingOccurrences(of: " ", with: "%20")
+                let fileURL = URL(string: encodedURLString, relativeTo: appcastURL)
+                guard Self.isHTTPURL(fileURL) else {
+                    throw AppcastItemError.invalidFileLink("File URLs must have a http or https URL scheme.")
+                }
+                self.fileURL = fileURL
+            }
         } else {
             self.fileURL = nil
         }
 
-        guard self.infoURL != nil || self.fileURL != nil else {
+        guard parsedInfoURL != nil || self.fileURL != nil else {
             throw AppcastItemError.missingEnclosureOrInfoLink("Appcast feed item must include either a <link> or an <enclosure url> element.")
         }
 
         self.contentLength = max(0, enclosureLength)
 
         self.osString = enclosure?[SUAppcastAttribute.OsType]
-        self.versionString = newVersion
+        self.signatures = enclosure.map {
+            SUSignatures(
+                optionalEd: $0[SUAppcastAttribute.EDSignature],
+                optionalDsa: $0[SUAppcastAttribute.DSASignature]
+            )
+        }
+        self.versionString = trustedVersion
         self.minimumSystemVersion = dict[SUAppcastElement.MinimumSystemVersion] as? String
         self.minimumUpdateVersion = dict[SUAppcastElement.MinimumUpdateVersion] as? String
         self.maximumSystemVersion = dict[SUAppcastElement.MaximumSystemVersion] as? String
@@ -645,13 +754,18 @@ public struct SUAppcastItem: Sendable, Equatable {
         
         self.channel = Self.parseChannel(dict)
         
-        // Grab critical update information
-        var criticalUpdateDict = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary
-        let tags = dict[SUAppcastElement.Tags] as? [String]
-        let hasCriticalTag = tags?.contains(SUAppcastElement.CriticalUpdate) ?? false
-        if hasCriticalTag {
-            // Legacy path where critical update used to be a tag without a specified version
+        // Grab critical update information. This content is not trusted after a
+        // feed signature failure, and the top-level element takes precedence
+        // over the legacy tag form.
+        let criticalUpdateDict: SUAppcast.AttributesDictionary?
+        if signingValidationStatus == .failed {
+            criticalUpdateDict = nil
+        } else if let topLevelCriticalUpdate = dict[SUAppcastElement.CriticalUpdate] as? SUAppcast.AttributesDictionary {
+            criticalUpdateDict = topLevelCriticalUpdate
+        } else if let tags = dict[SUAppcastElement.Tags] as? [String], tags.contains(SUAppcastElement.CriticalUpdate) {
             criticalUpdateDict = .init()
+        } else {
+            criticalUpdateDict = nil
         }
         
         self._hasCriticalInformation = criticalUpdateDict != nil
@@ -669,6 +783,8 @@ public struct SUAppcastItem: Sendable, Equatable {
         } else {
             self._state = resolvedState
         }
+
+        self.infoURL = signingValidationStatus == .failed ? nil : parsedInfoURL
         
         let rolloutIntervalString = dict[SUAppcastElement.PhasedRolloutInterval] as? String
         self.phasedRolloutInterval = rolloutIntervalString.map { ($0 as NSString).integerValue }
@@ -680,22 +796,61 @@ public struct SUAppcastItem: Sendable, Equatable {
             shortVersionString = dict[SUAppcastElement.ShortVersionString] as? String
         }
         
-        self.displayVersionString = shortVersionString ?? self.versionString
-        
-        // Find the appropriate release notes URL.
-        if let releaseNotesLinkString = dict[SUAppcastElement.ReleaseNotesLink] as? String {
-            self.releaseNotesURL = URL(string: releaseNotesLinkString, relativeTo: appcastURL)
+        if let shortVersionString, signingValidationStatus == .failed {
+            self.displayVersionString = Self.sanitizeUntrustedVersionString(shortVersionString)
+        } else {
+            self.displayVersionString = shortVersionString ?? self.versionString
         }
-        else if itemDescription?.hasPrefix("https://") ?? false {
-            self.releaseNotesURL = URL(string: itemDescription ?? "")
-        }
-        else {
+
+        // Find the appropriate release notes URL and its download metadata.
+        let releaseNotesDictionary = dict[SUAppcastElement.ReleaseNotesLink] as? SUAppcast.AttributesDictionary
+        let releaseNotesString = releaseNotesDictionary?["content"]
+            ?? dict[SUAppcastElement.ReleaseNotesLink] as? String
+
+        if signingValidationStatus == .failed {
             self.releaseNotesURL = nil
+            self.releaseNotesSignatures = nil
+            self.releaseNotesContentLength = 0
+        } else {
+            if let releaseNotesString {
+                let releaseNotesURL = URL(string: releaseNotesString, relativeTo: appcastURL)
+                switch linkPolicy {
+                case .legacyAppcast:
+                    self.releaseNotesURL = releaseNotesURL
+                case .sparkle:
+                    self.releaseNotesURL = Self.isHTTPURL(releaseNotesURL) ? releaseNotesURL : nil
+                }
+            } else if releaseNotesDictionary != nil,
+                      let itemDescription,
+                      itemDescription.hasPrefix("http://") || itemDescription.hasPrefix("https://") {
+                self.releaseNotesURL = URL(string: itemDescription)
+            } else if linkPolicy == .legacyAppcast,
+                      let itemDescription,
+                      itemDescription.hasPrefix("https://") {
+                self.releaseNotesURL = URL(string: itemDescription)
+            } else {
+                self.releaseNotesURL = nil
+            }
+
+            self.releaseNotesSignatures = releaseNotesDictionary.map {
+                SUSignatures(optionalEd: $0[SUAppcastAttribute.EDSignature])
+            }
+
+            let releaseNotesLength = (releaseNotesDictionary?[SURSSAttribute.Length] as NSString?)?.longLongValue ?? 0
+            self.releaseNotesContentLength = max(0, releaseNotesLength)
         }
         
         // Get full release notes URL if informed.
-        if let fullReleaseNotesString = dict[SUAppcastElement.FullReleaseNotesLink] as? String {
-            self.fullReleaseNotesURL = URL(string: fullReleaseNotesString, relativeTo: appcastURL)
+        if signingValidationStatus == .failed {
+            self.fullReleaseNotesURL = nil
+        } else if let fullReleaseNotesString = dict[SUAppcastElement.FullReleaseNotesLink] as? String {
+            let fullReleaseNotesURL = URL(string: fullReleaseNotesString, relativeTo: appcastURL)
+            switch linkPolicy {
+            case .legacyAppcast:
+                self.fullReleaseNotesURL = fullReleaseNotesURL
+            case .sparkle:
+                self.fullReleaseNotesURL = Self.isHTTPURL(fullReleaseNotesURL) ? fullReleaseNotesURL : nil
+            }
         } else {
             self.fullReleaseNotesURL = nil
         }
@@ -738,7 +893,9 @@ public struct SUAppcastItem: Sendable, Equatable {
                         dictionary: deltaItemDictionary,
                         relativeTo: appcastURL,
                         stateResolver: nil,
-                        resolvedState: self._state
+                        resolvedState: self._state,
+                        signingValidationStatus: signingValidationStatus,
+                        linkPolicy: linkPolicy
                     )
                     deltaUpdates[deltaFromVersion] = deltaItem
                 } catch {
@@ -776,6 +933,30 @@ public struct SUAppcastItem: Sendable, Equatable {
         } else {
             self.deltaFromSparkleLocales = nil
         }
+
+        if signingValidationStatus == .failed && self.isInformationOnlyUpdate {
+            throw AppcastItemError.informationalUpdateRejected("Informational update is rejected because signing validation on feed failed.")
+        }
+    }
+
+    private static func sanitizeUntrustedVersionString(_ versionString: String) -> String {
+        let string = versionString as NSString
+        let firstLetterRange = string.rangeOfCharacter(from: .letters)
+        guard firstLetterRange.location != NSNotFound else {
+            return versionString
+        }
+
+        let allowedLength = min(firstLetterRange.location + 10, string.length)
+        return string.substring(with: NSRange(location: 0, length: allowedLength))
+    }
+
+    private static func isHTTPURL(_ url: URL?) -> Bool {
+        guard let scheme = url?.scheme else {
+            return false
+        }
+
+        return scheme.caseInsensitiveCompare("http") == .orderedSame
+            || scheme.caseInsensitiveCompare("https") == .orderedSame
     }
     
     private static func parseChannel(_ dict: SUAppcastItemProperties) -> String? {
@@ -789,6 +970,27 @@ public struct SUAppcastItem: Sendable, Equatable {
         }
         
         return channel
+    }
+
+    public static func == (lhs: SUAppcastItem, rhs: SUAppcastItem) -> Bool {
+        let lhsProperties = lhs.propertiesDictionary.reduce(into: [AnyHashable: Any]()) { result, property in
+            result[property.key] = property.value
+        }
+        let rhsProperties = rhs.propertiesDictionary.reduce(into: [AnyHashable: Any]()) { result, property in
+            result[property.key] = property.value
+        }
+
+        return NSDictionary(dictionary: lhsProperties).isEqual(to: rhsProperties)
+            && lhs.fileURL == rhs.fileURL
+            && lhs.infoURL == rhs.infoURL
+            && lhs.releaseNotesURL == rhs.releaseNotesURL
+            && lhs.fullReleaseNotesURL == rhs.fullReleaseNotesURL
+            && lhs._state == rhs._state
+            && lhs.deltaUpdates == rhs.deltaUpdates
+            && lhs.signatures == rhs.signatures
+            && lhs.releaseNotesSignatures == rhs.releaseNotesSignatures
+            && lhs.releaseNotesContentLength == rhs.releaseNotesContentLength
+            && lhs.signingValidationStatus == rhs.signingValidationStatus
     }
 }
 

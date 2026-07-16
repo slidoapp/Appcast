@@ -12,17 +12,52 @@ public struct SUAppcast: Sendable {
     internal static let empty = SUAppcast()
     
     public var items: [SUAppcastItem]
+    public let signingValidationStatus: SPUAppcastSigningValidationStatus
 
     internal init() {
         self.items = []
+        self.signingValidationStatus = .skipped
     }
     
-    internal init(items: [SUAppcastItem]) {
+    internal init(items: [SUAppcastItem], signingValidationStatus: SPUAppcastSigningValidationStatus = .skipped) {
         self.items = items
+        self.signingValidationStatus = signingValidationStatus
     }
 
     public init(xmlData appcastData: Data, relativeTo: URL?, stateResolver: SPUAppcastItemStateResolver?) throws {
+        try self.init(
+            xmlData: appcastData,
+            relativeTo: relativeTo,
+            stateResolver: stateResolver,
+            signingValidationStatus: .skipped,
+            linkPolicy: .legacyAppcast
+        )
+    }
+
+    public init(
+        xmlData appcastData: Data,
+        relativeTo relativeURL: URL?,
+        stateResolver: SPUAppcastItemStateResolver?,
+        signingValidationStatus: SPUAppcastSigningValidationStatus
+    ) throws {
+        try self.init(
+            xmlData: appcastData,
+            relativeTo: relativeURL,
+            stateResolver: stateResolver,
+            signingValidationStatus: signingValidationStatus,
+            linkPolicy: .sparkle
+        )
+    }
+
+    private init(
+        xmlData appcastData: Data,
+        relativeTo relativeURL: URL?,
+        stateResolver: SPUAppcastItemStateResolver?,
+        signingValidationStatus: SPUAppcastSigningValidationStatus,
+        linkPolicy: SUAppcastLinkPolicy
+    ) throws {
         self.items = []
+        self.signingValidationStatus = signingValidationStatus
         
         let document = try XMLDocument(data: appcastData, options: .nodeLoadExternalEntitiesNever)
         let xmlItems = try document.nodes(forXPath: "/rss/channel/item")
@@ -109,6 +144,16 @@ public struct SUAppcast: Sendable {
                         dict[SURSSElement.Description] = descriptionDict
                     }
                 }
+                else if name == SUAppcastElement.ReleaseNotesLink {
+                    if let releaseNotesLink = node.stringValue {
+                        let attributes = self.attributes(of: node)
+                        var linkDictionary = AttributesDictionary()
+                        linkDictionary["content"] = releaseNotesLink
+                        linkDictionary[SUAppcastAttribute.EDSignature] = attributes[SUAppcastAttribute.EDSignature]
+                        linkDictionary[SURSSAttribute.Length] = attributes[SURSSAttribute.Length]
+                        dict[name] = linkDictionary
+                    }
+                }
                 else if name == SUAppcastElement.Deltas {
                     var deltas = [[String: String]]()
                     
@@ -166,9 +211,24 @@ public struct SUAppcast: Sendable {
             }
             
             
-            let appcastItem = try SUAppcastItem(dictionary: dict, relativeTo: relativeTo, stateResolver: stateResolver, resolvedState: nil)
-            
-            self.items.append(appcastItem)
+            do {
+                let appcastItem = try SUAppcastItem(
+                    dictionary: dict,
+                    relativeTo: relativeURL,
+                    stateResolver: stateResolver,
+                    resolvedState: nil,
+                    signingValidationStatus: signingValidationStatus,
+                    linkPolicy: linkPolicy
+                )
+
+                self.items.append(appcastItem)
+            } catch {
+                // Sparkle ignores rejected informational or malformed items while operating
+                // in safe fallback mode after feed signing validation fails.
+                if signingValidationStatus != .failed {
+                    throw error
+                }
+            }
         }
     }
     
@@ -251,6 +311,6 @@ public struct SUAppcast: Sendable {
     /// - Returns: A new SUAppcast instance containing only the items that pass the filter
     public func copyByFilteringItems(_ filterBlock: (SUAppcastItem) -> Bool) -> SUAppcast {
         let filteredItems = items.filter(filterBlock)
-        return SUAppcast(items: filteredItems)
+        return SUAppcast(items: filteredItems, signingValidationStatus: signingValidationStatus)
     }
 }
