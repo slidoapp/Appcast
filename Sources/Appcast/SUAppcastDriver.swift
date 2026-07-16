@@ -22,9 +22,9 @@ public class SUAppcastDriver {
         }
 
         let timeSinceRelease = currentDate.timeIntervalSince(itemReleaseDate)
-        let timeToWaitForGroup = phasedRolloutInterval * phasedUpdateGroup.intValue
+        let timeToWaitForGroup = Double(phasedRolloutInterval) * Double(phasedUpdateGroup.uintValue)
 
-        return timeSinceRelease >= Double(timeToWaitForGroup)
+        return timeSinceRelease >= timeToWaitForGroup
     }
     
     public static func containsSkippedUpdate(item: SUAppcastItem, skippedUpdate: SPUSkippedUpdate?, hostPassesSkippedMajorVersion: Bool, versionComparator: SUVersionComparison) -> Bool {
@@ -35,11 +35,19 @@ public class SUAppcastDriver {
         let skippedMajorVersion = skippedUpdate.majorVersion
         let skippedMajorSubreleaseVersion = skippedUpdate.majorSubreleaseVersion
         
-        if !hostPassesSkippedMajorVersion, let skippedMajorVersion, let minimumAutoupdateVersion = item.minimumAutoupdateVersion, let skippedMajorSubreleaseVersion, let ignoreSkippedUpgradesBelowVersion = item.ignoreSkippedUpgradesBelowVersion {
-            if versionComparator.compareVersion(skippedMajorVersion, toVersion: minimumAutoupdateVersion) != .orderedAscending, versionComparator.compareVersion(skippedMajorSubreleaseVersion, toVersion: ignoreSkippedUpgradesBelowVersion) != .orderedAscending {
-                // If skipped major version is >= than the item's minimumAutoupdateVersion, we can skip the item.
-                // But if there is an ignoreSkippedUpgradesBelowVersion, we can only skip the item if the last skipped subrelease
-                // version is >= than that version provided by the item
+        if !hostPassesSkippedMajorVersion,
+           let skippedMajorVersion,
+           let minimumAutoupdateVersion = item.minimumAutoupdateVersion,
+           versionComparator.compareVersion(skippedMajorVersion, toVersion: minimumAutoupdateVersion) != .orderedAscending {
+            // If skipped major version is >= than the item's minimumAutoupdateVersion, we can skip the item.
+            // But if there is an ignoreSkippedUpgradesBelowVersion, we can only skip the item if the last skipped subrelease
+            // version is >= than that version provided by the item.
+            guard let ignoreSkippedUpgradesBelowVersion = item.ignoreSkippedUpgradesBelowVersion else {
+                return true
+            }
+
+            if let skippedMajorSubreleaseVersion,
+               versionComparator.compareVersion(skippedMajorSubreleaseVersion, toVersion: ignoreSkippedUpgradesBelowVersion) != .orderedAscending {
                 return true
             }
         }
@@ -62,7 +70,7 @@ public class SUAppcastDriver {
             let passesHardwareRequirements = !testOSVersion || item.arm64HardwareRequirementIsOK
             let passesPhasedRollout = itemIsReadyForPhasedRollout(item, phasedUpdateGroup: phasedUpdateGroup, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator)
             let passesMinimumAutoupdateVersion = !testMinimumAutoupdateVersion || !item.isMajorUpgrade
-            let passesSkippedUpdates = hostVersion.isEmpty || !containsSkippedUpdate(item: item, skippedUpdate: skippedUpdate, hostPassesSkippedMajorVersion: hostPassesSkippedMajorVersion, versionComparator: versionComparator)
+            let passesSkippedUpdates = !containsSkippedUpdate(item: item, skippedUpdate: skippedUpdate, hostPassesSkippedMajorVersion: hostPassesSkippedMajorVersion, versionComparator: versionComparator)
 
             return passesOSVersion && passesHardwareRequirements && passesPhasedRollout && passesMinimumAutoupdateVersion && passesSkippedUpdates
         }
