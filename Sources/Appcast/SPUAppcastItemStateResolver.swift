@@ -6,6 +6,16 @@
 //
 
 import Foundation
+#if canImport(Darwin)
+import Darwin
+#endif
+
+enum SPUHardwareArchitecture: Sendable {
+    case arm64OrCompatible
+    case intelNative
+    case intelTranslated
+    case intelUnknown
+}
 
 public struct SPUAppcastItemStateResolver {
     let hostVersion: String
@@ -16,6 +26,14 @@ public struct SPUAppcastItemStateResolver {
         self.hostVersion = hostVersion
         self.applicationVersionComparator = applicationVersionComparator
         self.standardVersionComparator = standardVersionComparator
+    }
+
+    func isMinimumUpdateVersionOK(_ minimumUpdateVersion: String?) -> Bool {
+        guard let minimumUpdateVersion, !minimumUpdateVersion.isEmpty else {
+            return true
+        }
+
+        return applicationVersionComparator.compareVersion(minimumUpdateVersion, toVersion: hostVersion) != .orderedDescending
     }
     
     func isMinimumOperatingSystemVersionOK(_ minimumSystemVersion: String?) -> Bool {
@@ -40,6 +58,47 @@ public struct SPUAppcastItemStateResolver {
         let osVersion = SUOperatingSystem()
         maximumVersionOK = standardVersionComparator.compareVersion(maximumSystemVersion, toVersion: osVersion.systemVersionString) != .orderedAscending
         return maximumVersionOK
+    }
+
+    func isArm64HardwareRequirementOK(
+        _ hardwareRequirements: Set<String>,
+        minimumSystemVersion: String?,
+        architecture: SPUHardwareArchitecture = Self.currentHardwareArchitecture()
+    ) -> Bool {
+        let requiresArm64: Bool
+        if let minimumSystemVersion, !minimumSystemVersion.isEmpty,
+           standardVersionComparator.compareVersion(minimumSystemVersion, toVersion: "27.0") != .orderedAscending {
+            requiresArm64 = true
+        } else {
+            requiresArm64 = hardwareRequirements.contains(SUAppcastElement.HardwareRequirementARM64)
+        }
+
+        guard requiresArm64 else {
+            return true
+        }
+
+        switch architecture {
+        case .intelNative:
+            return false
+        case .arm64OrCompatible, .intelTranslated, .intelUnknown:
+            return true
+        }
+    }
+
+    private static func currentHardwareArchitecture() -> SPUHardwareArchitecture {
+#if arch(x86_64) && canImport(Darwin)
+        var translatedResult: Int32 = 0
+        var translatedResultSize = MemoryLayout.size(ofValue: translatedResult)
+        let result = sysctlbyname("sysctl.proc_translated", &translatedResult, &translatedResultSize, nil, 0)
+
+        if result == -1 {
+            return errno == ENOENT ? .intelNative : .intelUnknown
+        }
+
+        return translatedResult == 1 ? .intelTranslated : .intelNative
+#else
+        return .arm64OrCompatible
+#endif
     }
 
     static func isMinimumAutoupdateVersionOK(_ minimumAutoupdateVersion: String?, hostVersion: String, versionComparator: SUVersionComparison) -> Bool {
@@ -91,13 +150,34 @@ public struct SPUAppcastItemStateResolver {
         return false
     }
     
-    public func resolveState(informationalUpdateVersions: Set<String>?, minimumOperatingSystemVersion: String?, maximumOperatingSystemVersion: String?, minimumAutoupdateVersion: String?, criticalUpdateDictionary: [String: Any]?) -> SPUAppcastItemState {
+    public func resolveState(
+        informationalUpdateVersions: Set<String>?,
+        minimumUpdateVersion: String? = nil,
+        minimumOperatingSystemVersion: String?,
+        maximumOperatingSystemVersion: String?,
+        minimumAutoupdateVersion: String?,
+        criticalUpdateDictionary: [String: Any]?,
+        hardwareRequirements: Set<String> = []
+    ) -> SPUAppcastItemState {
         let informationalUpdate = self.isInformationalUpdate(informationalUpdateVersions: informationalUpdateVersions)
+        let minimumUpdateVersionIsOK = self.isMinimumUpdateVersionOK(minimumUpdateVersion)
         let minimumOperatingSystemVersionIsOK = self.isMinimumOperatingSystemVersionOK(minimumOperatingSystemVersion)
         let maximumOperatingSystemVersionIsOK = self.isMaximumOperatingSystemVersionOK(maximumOperatingSystemVersion)
         let majorUpgrade = !self.isMinimumAutoupdateVersionOK(minimumAutoupdateVersion)
         let criticalUpdate = self.isCriticalUpdate(criticalUpdateDictionary: criticalUpdateDictionary)
+        let arm64HardwareRequirementIsOK = self.isArm64HardwareRequirementOK(
+            hardwareRequirements,
+            minimumSystemVersion: minimumOperatingSystemVersion
+        )
 
-        return SPUAppcastItemState(withMajorUpgrade: majorUpgrade, criticalUpdate: criticalUpdate, informationalUpdate: informationalUpdate, minimumOperatingSystemVersionIsOK: minimumOperatingSystemVersionIsOK, maximumOperatingSystemVersionIsOK: maximumOperatingSystemVersionIsOK)
+        return SPUAppcastItemState(
+            withMajorUpgrade: majorUpgrade,
+            criticalUpdate: criticalUpdate,
+            informationalUpdate: informationalUpdate,
+            minimumUpdateVersionIsOK: minimumUpdateVersionIsOK,
+            minimumOperatingSystemVersionIsOK: minimumOperatingSystemVersionIsOK,
+            maximumOperatingSystemVersionIsOK: maximumOperatingSystemVersionIsOK,
+            arm64HardwareRequirementIsOK: arm64HardwareRequirementIsOK
+        )
     }
 }

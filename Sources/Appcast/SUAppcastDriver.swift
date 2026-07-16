@@ -22,9 +22,9 @@ public class SUAppcastDriver {
         }
 
         let timeSinceRelease = currentDate.timeIntervalSince(itemReleaseDate)
-        let timeToWaitForGroup = phasedRolloutInterval * phasedUpdateGroup.intValue
+        let timeToWaitForGroup = Double(phasedRolloutInterval) * Double(phasedUpdateGroup.uintValue)
 
-        return timeSinceRelease >= Double(timeToWaitForGroup)
+        return timeSinceRelease >= timeToWaitForGroup
     }
     
     public static func containsSkippedUpdate(item: SUAppcastItem, skippedUpdate: SPUSkippedUpdate?, hostPassesSkippedMajorVersion: Bool, versionComparator: SUVersionComparison) -> Bool {
@@ -35,11 +35,19 @@ public class SUAppcastDriver {
         let skippedMajorVersion = skippedUpdate.majorVersion
         let skippedMajorSubreleaseVersion = skippedUpdate.majorSubreleaseVersion
         
-        if !hostPassesSkippedMajorVersion, let skippedMajorVersion, let minimumAutoupdateVersion = item.minimumAutoupdateVersion, let skippedMajorSubreleaseVersion, let ignoreSkippedUpgradesBelowVersion = item.ignoreSkippedUpgradesBelowVersion {
-            if versionComparator.compareVersion(skippedMajorVersion, toVersion: minimumAutoupdateVersion) != .orderedAscending, versionComparator.compareVersion(skippedMajorSubreleaseVersion, toVersion: ignoreSkippedUpgradesBelowVersion) != .orderedAscending {
-                // If skipped major version is >= than the item's minimumAutoupdateVersion, we can skip the item.
-                // But if there is an ignoreSkippedUpgradesBelowVersion, we can only skip the item if the last skipped subrelease
-                // version is >= than that version provided by the item
+        if !hostPassesSkippedMajorVersion,
+           let skippedMajorVersion,
+           let minimumAutoupdateVersion = item.minimumAutoupdateVersion,
+           versionComparator.compareVersion(skippedMajorVersion, toVersion: minimumAutoupdateVersion) != .orderedAscending {
+            // If skipped major version is >= than the item's minimumAutoupdateVersion, we can skip the item.
+            // But if there is an ignoreSkippedUpgradesBelowVersion, we can only skip the item if the last skipped subrelease
+            // version is >= than that version provided by the item.
+            guard let ignoreSkippedUpgradesBelowVersion = item.ignoreSkippedUpgradesBelowVersion else {
+                return true
+            }
+
+            if let skippedMajorSubreleaseVersion,
+               versionComparator.compareVersion(skippedMajorSubreleaseVersion, toVersion: ignoreSkippedUpgradesBelowVersion) != .orderedAscending {
                 return true
             }
         }
@@ -57,23 +65,22 @@ public class SUAppcastDriver {
 
         let hostPassesSkippedMajorVersion = SPUAppcastItemStateResolver.isMinimumAutoupdateVersionOK(skippedUpdate?.majorVersion, hostVersion: hostVersion, versionComparator: versionComparator)
 
-        let filteredItems = appcast.items.filter { item in
+        return appcast.copyByFilteringItems { item in
             let passesOSVersion = !testOSVersion || (item.minimumOperatingSystemVersionIsOK && item.maximumOperatingSystemVersionIsOK)
+            let passesHardwareRequirements = !testOSVersion || item.arm64HardwareRequirementIsOK
             let passesPhasedRollout = itemIsReadyForPhasedRollout(item, phasedUpdateGroup: phasedUpdateGroup, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator)
             let passesMinimumAutoupdateVersion = !testMinimumAutoupdateVersion || !item.isMajorUpgrade
-            let passesSkippedUpdates = hostVersion.isEmpty || !containsSkippedUpdate(item: item, skippedUpdate: skippedUpdate, hostPassesSkippedMajorVersion: hostPassesSkippedMajorVersion, versionComparator: versionComparator)
+            let passesSkippedUpdates = !containsSkippedUpdate(item: item, skippedUpdate: skippedUpdate, hostPassesSkippedMajorVersion: hostPassesSkippedMajorVersion, versionComparator: versionComparator)
 
-            return passesOSVersion && passesPhasedRollout && passesMinimumAutoupdateVersion && passesSkippedUpdates
+            return passesOSVersion && passesHardwareRequirements && passesPhasedRollout && passesMinimumAutoupdateVersion && passesSkippedUpdates
         }
-
-        return SUAppcast(items: filteredItems)
     }
     
     public static func deltaUpdate(from appcastItem: SUAppcastItem, hostVersion: String) -> SUAppcastItem? {
         return appcastItem.deltaUpdates[hostVersion]
     }
     
-    public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem? {
+    public static func bestItem(fromAppcastItems: [SUAppcastItem], comparator: SUVersionComparison) -> SUAppcastItem? {
         var item: SUAppcastItem?
         for appcastItem in fromAppcastItems {
             if item == nil || comparator.compareVersion(item!.versionString, toVersion: appcastItem.versionString) == .orderedAscending {
@@ -82,9 +89,27 @@ public class SUAppcastDriver {
         }
         return item
     }
+
+    public static func bestItem<Comparator: SUVersionComparison>(
+        fromAppcastItems: [SUAppcastItem],
+        getDeltaItem deltaItem: inout SUAppcastItem?,
+        withHostVersion hostVersion: String,
+        comparator: Comparator
+    ) -> SUAppcastItem? {
+        let item = bestItem(fromAppcastItems: fromAppcastItems, comparator: comparator)
+        deltaItem = item.flatMap { deltaUpdate(from: $0, hostVersion: hostVersion) }
+        return item
+    }
+
+    // Retained for source compatibility with the initially published Swift API.
+    // A value parameter cannot return the selected delta; new code should use the
+    // inout overload or the comparator-only overload above.
+    public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem? {
+        bestItem(fromAppcastItems: fromAppcastItems, comparator: comparator)
+    }
     
     public static func filterAppcast(_ appcast: SUAppcast, forMacOSAndAllowedChannels allowedChannels: [String]) -> SUAppcast {
-        let filteredItems = appcast.items.filter { item in
+        return appcast.copyByFilteringItems { item in
             // We will never care about other OS's
             if !item.isMacOsUpdate {
                 return false
@@ -92,6 +117,11 @@ public class SUAppcastDriver {
             
             // Delta updates cannot be top-level entries
             if item.isDeltaUpdate {
+                return false
+            }
+
+            // Updates that require a newer host version are never eligible, regardless of channel.
+            if !item.minimumUpdateVersionIsOK {
                 return false
             }
             
@@ -102,8 +132,6 @@ public class SUAppcastDriver {
             
             return allowedChannels.contains(channel)
         }
-        
-        return SUAppcast(items: filteredItems)
     }
     
     // + (SUAppcast *)filterAppcast:(SUAppcast *)appcast forMacOSAndAllowedChannels:(NSSet<NSString *> *)allowedChannels
