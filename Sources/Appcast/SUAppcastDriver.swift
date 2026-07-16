@@ -73,7 +73,7 @@ public class SUAppcastDriver {
         return appcastItem.deltaUpdates[hostVersion]
     }
     
-    public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem? {
+    public static func bestItem(fromAppcastItems: [SUAppcastItem], comparator: SUVersionComparison) -> SUAppcastItem? {
         var item: SUAppcastItem?
         for appcastItem in fromAppcastItems {
             if item == nil || comparator.compareVersion(item!.versionString, toVersion: appcastItem.versionString) == .orderedAscending {
@@ -81,6 +81,24 @@ public class SUAppcastDriver {
             }
         }
         return item
+    }
+
+    public static func bestItem<Comparator: SUVersionComparison>(
+        fromAppcastItems: [SUAppcastItem],
+        getDeltaItem deltaItem: inout SUAppcastItem?,
+        withHostVersion hostVersion: String,
+        comparator: Comparator
+    ) -> SUAppcastItem? {
+        let item = bestItem(fromAppcastItems: fromAppcastItems, comparator: comparator)
+        deltaItem = item.flatMap { deltaUpdate(from: $0, hostVersion: hostVersion) }
+        return item
+    }
+
+    // Retained for source compatibility with the initially published Swift API.
+    // A value parameter cannot return the selected delta; new code should use the
+    // inout overload or the comparator-only overload above.
+    public static func bestItem(fromAppcastItems: [SUAppcastItem], getDeltaItem: SUAppcastItem?, withHostVersion: String, comparator: SUVersionComparison) -> SUAppcastItem? {
+        bestItem(fromAppcastItems: fromAppcastItems, comparator: comparator)
     }
     
     public static func filterAppcast(_ appcast: SUAppcast, forMacOSAndAllowedChannels allowedChannels: [String]) -> SUAppcast {

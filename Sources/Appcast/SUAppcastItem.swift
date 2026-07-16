@@ -670,53 +670,21 @@ public struct SUAppcastItem: Sendable, Equatable {
         var deltaUpdates: [String: SUAppcastItem] = [:]
         if let deltaEnclosures = dict[SUAppcastElement.Deltas] as? [SUAppcast.AttributesDictionary] {
             for deltaEnclosure in deltaEnclosures {
-                guard let deltaFromVersion = deltaEnclosure[SUAppcastAttribute.DeltaFrom], !deltaFromVersion.isEmpty else {
+                guard let deltaFromVersion = deltaEnclosure[SUAppcastAttribute.DeltaFrom] else {
                     continue
                 }
 
-                var deltaItemDictionary = SUAppcastItemProperties()
-                deltaItemDictionary[SUAppcastElement.Version] = newVersion
-
-                var mergedEnclosure = deltaEnclosure
-                if let osType = enclosure?[SUAppcastAttribute.OsType], mergedEnclosure[SUAppcastAttribute.OsType] == nil {
-                    mergedEnclosure[SUAppcastAttribute.OsType] = osType
-                }
-                deltaItemDictionary[SURSSElement.Enclosure] = mergedEnclosure
-
-                // Inherit state-affecting properties from parent item
-                if let link = dict[SURSSElement.Link] {
-                    deltaItemDictionary[SURSSElement.Link] = link
-                }
-                if let informationalUpdate = dict[SUAppcastElement.InformationalUpdate] {
-                    deltaItemDictionary[SUAppcastElement.InformationalUpdate] = informationalUpdate
-                }
-                if let minimumSystemVersion = dict[SUAppcastElement.MinimumSystemVersion] {
-                    deltaItemDictionary[SUAppcastElement.MinimumSystemVersion] = minimumSystemVersion
-                }
-                if let maximumSystemVersion = dict[SUAppcastElement.MaximumSystemVersion] {
-                    deltaItemDictionary[SUAppcastElement.MaximumSystemVersion] = maximumSystemVersion
-                }
-                if let minimumAutoupdateVersion = dict[SUAppcastElement.MinimumAutoupdateVersion] {
-                    deltaItemDictionary[SUAppcastElement.MinimumAutoupdateVersion] = minimumAutoupdateVersion
-                }
-                if let ignoreSkippedUpgradesBelowVersion = dict[SUAppcastElement.IgnoreSkippedUpgradesBelowVersion] {
-                    deltaItemDictionary[SUAppcastElement.IgnoreSkippedUpgradesBelowVersion] = ignoreSkippedUpgradesBelowVersion
-                }
-                if let channel = dict[SUAppcastElement.Channel] {
-                    deltaItemDictionary[SUAppcastElement.Channel] = channel
-                }
-                if let tags = dict[SUAppcastElement.Tags] {
-                    deltaItemDictionary[SUAppcastElement.Tags] = tags
-                }
-                if let criticalUpdate = dict[SUAppcastElement.CriticalUpdate] {
-                    deltaItemDictionary[SUAppcastElement.CriticalUpdate] = criticalUpdate
-                }
-                if let shortVersionString = dict[SUAppcastElement.ShortVersionString] {
-                    deltaItemDictionary[SUAppcastElement.ShortVersionString] = shortVersionString
-                }
+                var deltaItemDictionary = dict
+                deltaItemDictionary.removeValue(forKey: SUAppcastElement.Deltas)
+                deltaItemDictionary[SURSSElement.Enclosure] = deltaEnclosure
 
                 do {
-                    let deltaItem = try SUAppcastItem(dictionary: deltaItemDictionary, relativeTo: appcastURL, stateResolver: stateResolver, resolvedState: nil)
+                    let deltaItem = try SUAppcastItem(
+                        dictionary: deltaItemDictionary,
+                        relativeTo: appcastURL,
+                        stateResolver: nil,
+                        resolvedState: self._state
+                    )
                     deltaUpdates[deltaFromVersion] = deltaItem
                 } catch {
                     continue
@@ -725,14 +693,31 @@ public struct SUAppcastItem: Sendable, Equatable {
         }
         self.deltaUpdates = deltaUpdates
 
-        self.deltaFromSparkleExecutableSize = enclosure?[SUAppcastAttribute.DeltaFromSparkleExecutableSize].flatMap(Int.init)
-        if let deltaLocalesString = enclosure?[SUAppcastAttribute.DeltaFromSparkleLocales] {
-            let locales = deltaLocalesString
-                .split(separator: ",")
-                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
+        if let executableSizeString = enclosure?[SUAppcastAttribute.DeltaFromSparkleExecutableSize] {
+            let executableSize = (executableSizeString as NSString).longLongValue
+            self.deltaFromSparkleExecutableSize = executableSize > 0 ? Int(executableSize) : nil
+        } else {
+            self.deltaFromSparkleExecutableSize = nil
+        }
 
-            self.deltaFromSparkleLocales = Set(locales.prefix(Self.DELTA_EXPECTED_LOCALES_LIMIT))
+        if let deltaLocalesString = enclosure?[SUAppcastAttribute.DeltaFromSparkleLocales] {
+            var expectedLocales = Set<String>()
+            var processedLocaleCount = 0
+
+            for localeSubstring in deltaLocalesString.split(separator: ",", omittingEmptySubsequences: false) {
+                let locale = String(localeSubstring)
+                guard !locale.isEmpty, !locale.contains("."), !locale.contains("/") else {
+                    continue
+                }
+
+                expectedLocales.insert(locale)
+                processedLocaleCount += 1
+                if processedLocaleCount >= Self.DELTA_EXPECTED_LOCALES_LIMIT {
+                    break
+                }
+            }
+
+            self.deltaFromSparkleLocales = expectedLocales
         } else {
             self.deltaFromSparkleLocales = nil
         }
