@@ -59,11 +59,12 @@ public class SUAppcastDriver {
 
         let filteredItems = appcast.items.filter { item in
             let passesOSVersion = !testOSVersion || (item.minimumOperatingSystemVersionIsOK && item.maximumOperatingSystemVersionIsOK)
+            let passesHardwareRequirements = !testOSVersion || item.arm64HardwareRequirementIsOK
             let passesPhasedRollout = itemIsReadyForPhasedRollout(item, phasedUpdateGroup: phasedUpdateGroup, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator)
             let passesMinimumAutoupdateVersion = !testMinimumAutoupdateVersion || !item.isMajorUpgrade
             let passesSkippedUpdates = hostVersion.isEmpty || !containsSkippedUpdate(item: item, skippedUpdate: skippedUpdate, hostPassesSkippedMajorVersion: hostPassesSkippedMajorVersion, versionComparator: versionComparator)
 
-            return passesOSVersion && passesPhasedRollout && passesMinimumAutoupdateVersion && passesSkippedUpdates
+            return passesOSVersion && passesHardwareRequirements && passesPhasedRollout && passesMinimumAutoupdateVersion && passesSkippedUpdates
         }
 
         return SUAppcast(items: filteredItems)
@@ -110,6 +111,11 @@ public class SUAppcastDriver {
             
             // Delta updates cannot be top-level entries
             if item.isDeltaUpdate {
+                return false
+            }
+
+            // Updates that require a newer host version are never eligible, regardless of channel.
+            if !item.minimumUpdateVersionIsOK {
                 return false
             }
             

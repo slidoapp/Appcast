@@ -229,6 +229,22 @@ public struct SUAppcastItem: Sendable, Equatable {
     }
 
     /**
+     The minimum application version required to install this update if provided.
+
+     Updates that do not meet this requirement are excluded before channel filtering.
+
+     This is extracted from the @c <sparkle:minimumUpdateVersion> element.
+     */
+    public let minimumUpdateVersion: String?
+
+    /**
+     Indicates whether or not the current application version passes the `minimumUpdateVersion` requirement.
+     */
+    public var minimumUpdateVersionIsOK: Bool {
+        self._state?.minimumUpdateVersionIsOK ?? true
+    }
+
+    /**
      The required maximum system operating version string for this update if provided.
      
      A maximum system operating version requirement should only be made in unusual scenarios.
@@ -252,6 +268,21 @@ public struct SUAppcastItem: Sendable, Equatable {
         } else {
             return true
         }
+    }
+
+    /**
+     The hardware requirements for this update.
+
+     Values are parsed case-insensitively from the comma- or whitespace-delimited
+     @c <sparkle:hardwareRequirements> element.
+     */
+    public let hardwareRequirements: Set<String>
+
+    /**
+     Indicates whether or not the current machine passes an Apple silicon requirement.
+     */
+    public var arm64HardwareRequirementIsOK: Bool {
+        self._state?.arm64HardwareRequirementIsOK ?? true
     }
 
     /**
@@ -501,7 +532,9 @@ public struct SUAppcastItem: Sendable, Equatable {
         self.itemDescriptionFormat = nil
         self.fullReleaseNotesURL = nil
         self.minimumSystemVersion = nil
+        self.minimumUpdateVersion = nil
         self.maximumSystemVersion = nil
+        self.hardwareRequirements = []
         self.channel = nil
         self.installationType = ""
         self.phasedRolloutInterval = nil
@@ -591,8 +624,22 @@ public struct SUAppcastItem: Sendable, Equatable {
         self.osString = enclosure?[SUAppcastAttribute.OsType]
         self.versionString = newVersion
         self.minimumSystemVersion = dict[SUAppcastElement.MinimumSystemVersion] as? String
+        self.minimumUpdateVersion = dict[SUAppcastElement.MinimumUpdateVersion] as? String
         self.maximumSystemVersion = dict[SUAppcastElement.MaximumSystemVersion] as? String
         self.minimumAutoupdateVersion = dict[SUAppcastElement.MinimumAutoupdateVersion] as? String
+
+        if let hardwareRequirementsString = dict[SUAppcastElement.HardwareRequirements] as? String {
+            var separators = CharacterSet.whitespaces
+            separators.insert(charactersIn: ",")
+            self.hardwareRequirements = Set(
+                hardwareRequirementsString
+                    .components(separatedBy: separators)
+                    .filter { !$0.isEmpty }
+                    .map { $0.lowercased() }
+            )
+        } else {
+            self.hardwareRequirements = []
+        }
         
         self.ignoreSkippedUpgradesBelowVersion = dict[SUAppcastElement.IgnoreSkippedUpgradesBelowVersion] as? String
         
@@ -610,7 +657,15 @@ public struct SUAppcastItem: Sendable, Equatable {
         self._hasCriticalInformation = criticalUpdateDict != nil
         
         if let stateResolver {
-            self._state = stateResolver.resolveState(informationalUpdateVersions: self._informationalUpdateVersions, minimumOperatingSystemVersion: self.minimumSystemVersion, maximumOperatingSystemVersion: self.maximumSystemVersion, minimumAutoupdateVersion: self.minimumAutoupdateVersion, criticalUpdateDictionary: criticalUpdateDict)
+            self._state = stateResolver.resolveState(
+                informationalUpdateVersions: self._informationalUpdateVersions,
+                minimumUpdateVersion: self.minimumUpdateVersion,
+                minimumOperatingSystemVersion: self.minimumSystemVersion,
+                maximumOperatingSystemVersion: self.maximumSystemVersion,
+                minimumAutoupdateVersion: self.minimumAutoupdateVersion,
+                criticalUpdateDictionary: criticalUpdateDict,
+                hardwareRequirements: self.hardwareRequirements
+            )
         } else {
             self._state = resolvedState
         }
