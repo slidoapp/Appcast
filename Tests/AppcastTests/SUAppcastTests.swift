@@ -97,14 +97,16 @@ final class SUAppcastTests: XCTestCase {
         XCTAssertEqual(emptyAppcast.items.count, 0)
     }
 
-    func test_releaseNotesLink_parsesSignatureAndContentLengthMetadata() throws {
+    func test_releaseNotesLink_indentedContent_parsesURLAndMetadata() throws {
         let signature = Data(repeating: 4, count: 64).base64EncodedString()
         let xml = """
         <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
           <channel>
             <item>
               <sparkle:version>2.0</sparkle:version>
-              <sparkle:releaseNotesLink sparkle:edSignature="\(signature)" length="2048">https://example.com/notes</sparkle:releaseNotesLink>
+              <sparkle:releaseNotesLink sparkle:edSignature="\(signature)" length="2048">
+                https://example.com/notes
+              </sparkle:releaseNotesLink>
               <enclosure url="https://example.com/Acme.zip" length="100" />
             </item>
           </channel>

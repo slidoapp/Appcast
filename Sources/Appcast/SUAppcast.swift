@@ -145,7 +145,7 @@ public struct SUAppcast: Sendable {
                     }
                 }
                 else if name == SUAppcastElement.ReleaseNotesLink {
-                    if let releaseNotesLink = node.stringValue {
+                    if let releaseNotesLink = node.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines) {
                         let attributes = self.attributes(of: node)
                         var linkDictionary = AttributesDictionary()
                         linkDictionary["content"] = releaseNotesLink
