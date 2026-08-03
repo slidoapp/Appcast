@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    cooldown:
+      default-days: 7
+    labels:
+      - 'dependabot'
+      - 'dependencies'
+      - 'build'
+    # These actions will be bumped only to next major version
+    ignore:
+      - dependency-name: 'actions/*'
+        update-types:
+          - 'version-update:semver-minor'
+          - 'version-update:semver-patch'
