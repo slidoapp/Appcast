@@ -104,6 +104,14 @@ public struct SUAppcastItem: Sendable, Equatable {
     public let contentLength: Int64;
 
     /**
+     The EdDSA and DSA signatures of the downloadable update.
+
+     These are extracted from the @c sparkle:edSignature and @c sparkle:dsaSignature
+     attributes of the @c <enclosure> element.
+     */
+    public let signatures: SUSignatures?
+
+    /**
      The info URL to the update item if provided.
      
      This informational link is used to direct the user to learn more about an update they cannot download/install directly from within the application.
@@ -491,9 +499,6 @@ public struct SUAppcastItem: Sendable, Equatable {
     
     // Indicates the versions we update from that are informational-only
     var _informationalUpdateVersions: InformationalUpdateType?
-
-    // Parsed signing information from the enclosure element.
-    let signatures: SUSignatures?
 
     // Parsed signing information and expected length for external release notes.
     let releaseNotesSignatures: SUSignatures?

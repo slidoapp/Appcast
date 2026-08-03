@@ -8,6 +8,7 @@ import XCTest
 
 final class AppcastPublicAPIParityTests: XCTestCase {
     func test_signingSkippedUpdateAndDeltaSelectionAPIs_arePubliclyUsable() throws {
+        let expectedSignature = Data(repeating: 42, count: 64)
         let deltaEnclosure: [String: String] = [
             "url": "https://example.com/Acme-2.0-from-1.0.delta",
             "sparkle:deltaFrom": "1.0",
@@ -15,6 +16,7 @@ final class AppcastPublicAPIParityTests: XCTestCase {
         let enclosure: [String: String] = [
             "url": "https://example.com/Acme.zip",
             "length": "100",
+            "sparkle:edSignature": expectedSignature.base64EncodedString(),
         ]
         let properties: SUAppcastItemProperties = [
             "sparkle:version": "2.0",
@@ -43,6 +45,8 @@ final class AppcastPublicAPIParityTests: XCTestCase {
         let signatures = SUSignatures(ed: nil, dsa: "AQID")
 
         XCTAssertEqual(item.signingValidationStatus, .succeeded)
+        XCTAssertEqual(item.signatures?.ed25519SignatureStatus, .present)
+        XCTAssertEqual(item.signatures?.ed25519Signature, expectedSignature)
         XCTAssertEqual(selectedItem?.versionString, "2.0")
         XCTAssertNotNil(deltaItem)
         XCTAssertEqual(skippedUpdate.minorVersion, "2.0")
