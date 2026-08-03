@@ -40,7 +40,7 @@ final class SUAppcastItemTests_description: SUAppcastItemBaseTests {
         XCTAssertEqual(item.itemDescriptionFormat, "html")
     }
 
-    private func makeItem(description: any Sendable) throws -> SUAppcastItem {
+    private func makeItem(description: SUAppcastItemPropertyValue) throws -> SUAppcastItem {
         var dictionary = createBasicAppcastItemDictionary()
         dictionary[SURSSElement.Description] = description
         return try SUAppcastItem(dictionary: dictionary, relativeTo: nil, stateResolver: nil, resolvedState: nil)

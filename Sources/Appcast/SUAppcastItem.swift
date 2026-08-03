@@ -7,7 +7,8 @@
 
 import Foundation
 
-public typealias SUAppcastItemProperties = [String: any Sendable]
+public typealias SUAppcastItemPropertyValue = any Equatable & Sendable
+public typealias SUAppcastItemProperties = [String: SUAppcastItemPropertyValue]
 
 /// The appcast item describing an update in the application's appcast feed.
 ///
@@ -972,15 +973,36 @@ public struct SUAppcastItem: Sendable, Equatable {
         return channel
     }
 
-    public static func == (lhs: SUAppcastItem, rhs: SUAppcastItem) -> Bool {
-        let lhsProperties = lhs.propertiesDictionary.reduce(into: [AnyHashable: Any]()) { result, property in
-            result[property.key] = property.value
-        }
-        let rhsProperties = rhs.propertiesDictionary.reduce(into: [AnyHashable: Any]()) { result, property in
-            result[property.key] = property.value
+    private static func propertiesEqual(
+        _ lhs: SUAppcastItemProperties,
+        _ rhs: SUAppcastItemProperties
+    ) -> Bool {
+        guard lhs.count == rhs.count else {
+            return false
         }
 
-        return NSDictionary(dictionary: lhsProperties).isEqual(to: rhsProperties)
+        return lhs.allSatisfy { property in
+            guard let rhsValue = rhs[property.key] else {
+                return false
+            }
+
+            return propertyValuesEqual(property.value, rhsValue)
+        }
+    }
+
+    private static func propertyValuesEqual<T: Equatable & Sendable>(
+        _ lhs: T,
+        _ rhs: SUAppcastItemPropertyValue
+    ) -> Bool {
+        guard let rhs = rhs as? T else {
+            return false
+        }
+
+        return lhs == rhs
+    }
+
+    public static func == (lhs: SUAppcastItem, rhs: SUAppcastItem) -> Bool {
+        return propertiesEqual(lhs.propertiesDictionary, rhs.propertiesDictionary)
             && lhs.fileURL == rhs.fileURL
             && lhs.infoURL == rhs.infoURL
             && lhs.releaseNotesURL == rhs.releaseNotesURL
