@@ -12,10 +12,11 @@ public struct SPUSkippedUpdate: Sendable {
     public let majorVersion: String?
     public let majorSubreleaseVersion: String?
     
-    init(minorVersion: String?, majorVersion: String?, majorSubreleaseVersion: String?) {
+    public init(minorVersion: String?, majorVersion: String?, majorSubreleaseVersion: String?) {
         self.minorVersion = minorVersion
         self.majorVersion = majorVersion
         self.majorSubreleaseVersion = majorSubreleaseVersion
+
+        assert(minorVersion != nil || majorVersion != nil)
     }
 }
-

@@ -13,8 +13,11 @@ public struct SUAppcastElement {
     static let CriticalUpdate = "sparkle:criticalUpdate"
     static let Deltas = "sparkle:deltas"
     static let MinimumAutoupdateVersion = "sparkle:minimumAutoupdateVersion"
+    static let MinimumUpdateVersion = "sparkle:minimumUpdateVersion"
     static let MinimumSystemVersion = "sparkle:minimumSystemVersion"
     static let MaximumSystemVersion = "sparkle:maximumSystemVersion"
+    static let HardwareRequirements = "sparkle:hardwareRequirements"
+    static let HardwareRequirementARM64 = "arm64"
     static let ReleaseNotesLink = "sparkle:releaseNotesLink"
     static let FullReleaseNotesLink = "sparkle:fullReleaseNotesLink"
     static let Tags = "sparkle:tags"
@@ -60,8 +63,7 @@ public struct SURSSAttribute {
 /// - Returns: A `Date` object if parsing succeeds, or `nil` if the format is invalid.
 internal func parseAppcastItemPubDate(from dateString: String) -> Date? {
     let formatter = DateFormatter()
-    formatter.calendar = Calendar(identifier: .gregorian)
-    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.locale = Locale(identifier: "en_US")
     formatter.dateFormat = "E, dd MMM yyyy HH:mm:ss Z"
     return formatter.date(from: dateString)
 }

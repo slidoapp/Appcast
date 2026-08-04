@@ -30,36 +30,33 @@ public struct SUStandardVersionComparator: SUVersionComparison, Sendable {
     }
     
     func typeOfCharacter(_ string: String) -> SUCharacterType {
-        if string.isEmpty {
+        let nsString = string as NSString
+        if nsString.length == 0 {
             return .stringType
         }
 
-        let character = string[string.startIndex]
-        return self.typeOfCharacter(character)
-    }
-    
-    func typeOfCharacter(_ character: Character) -> SUCharacterType {
-        if character == "." {
+        if nsString.isEqual(to: ".") {
             return .periodSeparatorType
-        } else if character == "-" {
+        } else if nsString.isEqual(to: "-") {
             return .dashType
         }
 
-        guard let characterScalar = character.unicodeScalars.first else {
-            return .stringType
-        }
-        
-        if CharacterSet.decimalDigits.contains(characterScalar) {
+        let character = nsString.character(at: 0)
+        if (CharacterSet.decimalDigits as NSCharacterSet).characterIsMember(character) {
             return .numberType
-        } else if CharacterSet.whitespacesAndNewlines.contains(characterScalar) {
+        } else if (CharacterSet.whitespacesAndNewlines as NSCharacterSet).characterIsMember(character) {
             return .whitespaceSeparatorType
-        } else if CharacterSet.punctuationCharacters.contains(characterScalar) {
+        } else if (CharacterSet.punctuationCharacters as NSCharacterSet).characterIsMember(character) {
             return .punctuationSeparatorType
         } else {
             return .stringType
         }
     }
     
+    func typeOfCharacter(_ character: Character) -> SUCharacterType {
+        typeOfCharacter(String(character))
+    }
+
     func isSeparatorType(characterType: SUCharacterType) -> Bool {
         switch characterType {
         case .numberType, .stringType, .dashType:
@@ -85,28 +82,30 @@ public struct SUStandardVersionComparator: SUVersionComparison, Sendable {
     }
     
     func splitVersion(string version: String) -> [String] {
-        var s: String
+        let nsVersion = version as NSString
+        let s: NSMutableString
         var oldType: SUCharacterType
         var newType: SUCharacterType
         var parts: [String] = []
         
-        if version.isEmpty {
+        if nsVersion.length == 0 {
             // Nothing to do here
             return []
         }
         
-        s = String(version.prefix(1))
-        oldType = self.typeOfCharacter(s)
+        s = NSMutableString(string: nsVersion.substring(to: 1))
+        oldType = self.typeOfCharacter(s as String)
         
-        for character in version.dropFirst() {
+        for index in 1 ..< nsVersion.length {
+            let character = nsVersion.substring(with: NSRange(location: index, length: 1))
             newType = self.typeOfCharacter(character)
             if newType == .dashType {
                 break
             }
             if oldType != newType || self.isSeparatorType(characterType: oldType) {
                 // We've reached a new segment
-                parts.append(s)
-                s = String(character)
+                parts.append(s as String)
+                s.setString(character)
             } else {
                 // Add character to string and continue
                 s.append(character)
@@ -115,7 +114,7 @@ public struct SUStandardVersionComparator: SUVersionComparison, Sendable {
         }
         
         // Add the last part onto the array
-        parts.append(s)
+        parts.append(s as String)
         return parts
     }
     
@@ -194,8 +193,8 @@ public struct SUStandardVersionComparator: SUVersionComparison, Sendable {
             if self.isEqualCharacterTypeClassForTypeA(typeA: typeA, typeB: typeB) {
                 // Same type; we can compare
                 if typeA == .numberType {
-                    let valueA = Int64(partA) ?? 0
-                    let valueB = Int64(partB) ?? 0
+                    let valueA = (partA as NSString).longLongValue
+                    let valueB = (partB as NSString).longLongValue
                     
                     if valueA > valueB {
                         return .orderedDescending

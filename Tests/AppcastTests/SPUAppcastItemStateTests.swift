@@ -17,7 +17,9 @@ class SPUAppcastItemStateTests: XCTestCase {
         XCTAssertTrue(itemState.majorUpgrade)
         XCTAssertTrue(itemState.criticalUpdate)
         XCTAssertTrue(itemState.informationalUpdate)
+        XCTAssertTrue(itemState.minimumUpdateVersionIsOK)
         XCTAssertTrue(itemState.minimumOperatingSystemVersionIsOK)
         XCTAssertTrue(itemState.maximumOperatingSystemVersionIsOK)
+        XCTAssertTrue(itemState.arm64HardwareRequirementIsOK)
     }
 }

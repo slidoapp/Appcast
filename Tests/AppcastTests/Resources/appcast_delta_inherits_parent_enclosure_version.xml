@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Delta version inheritance test</title>
+    <item>
+      <title>Acme 3.0</title>
+      <enclosure
+        url="https://example.com/Acme.zip"
+        sparkle:version="3.0" />
+      <sparkle:deltas>
+        <!-- The delta omits sparkle:version and inherits 3.0 from the parent enclosure. -->
+        <enclosure
+          url="https://example.com/Acme-from-1.0.delta"
+          sparkle:deltaFrom="1.0" />
+      </sparkle:deltas>
+    </item>
+  </channel>
+</rss>
