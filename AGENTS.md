@@ -40,4 +40,4 @@ must follow when interacting with this project.
 
 ## Related Projects
 
-* [sparkle](https://github.com/sparkle-project/Sparkle): Original implementation for Appcast files
+- [sparkle](https://github.com/sparkle-project/Sparkle): Original implementation for Appcast files

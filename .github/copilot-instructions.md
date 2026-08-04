@@ -7,7 +7,7 @@ used by the Sparkle framework for macOS application updates.
 
 The main source code for the Appcast library is located in the `Sources/Appcast` directory.
 
-The library targets Swift 5.8 language version and uses strict concurrency model.
+The library targets Swift 5.10 language version and uses strict concurrency model.
 
 
 ## Unit and Integration Tests
