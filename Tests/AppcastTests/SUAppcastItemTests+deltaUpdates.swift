@@ -47,6 +47,50 @@ final class SUAppcastItemTests_deltaUpdates: SUAppcastItemBaseTests {
         XCTAssertEqual(deltaItem.fileURL?.absoluteString, "https://example.com/Acme-3.0-from-1.0.delta")
     }
 
+    func test_deltaUpdate_withoutVersion_inheritsParentEnclosureVersion() throws {
+        var dictionary = createBasicAppcastItemDictionary()
+        dictionary.removeValue(forKey: SUAppcastElement.Version)
+
+        var parentEnclosure = dictionary[SURSSElement.Enclosure] as! SUAppcast.AttributesDictionary
+        parentEnclosure[SUAppcastAttribute.Version] = "3.0"
+        dictionary[SURSSElement.Enclosure] = parentEnclosure
+
+        var deltaEnclosure = SUAppcast.AttributesDictionary()
+        deltaEnclosure[SURSSAttribute.URL] = "https://example.com/Acme-from-1.0.delta"
+        deltaEnclosure[SUAppcastAttribute.DeltaFrom] = "1.0"
+        dictionary[SUAppcastElement.Deltas] = [deltaEnclosure]
+
+        let parentItem = try SUAppcastItem(
+            dictionary: dictionary,
+            relativeTo: nil,
+            stateResolver: nil,
+            resolvedState: nil,
+            signingValidationStatus: .succeeded
+        )
+        let deltaItem = try XCTUnwrap(parentItem.deltaUpdates["1.0"])
+
+        XCTAssertEqual(deltaItem.versionString, "3.0")
+    }
+
+    func test_deltaUpdate_withoutVersion_inheritsParentEnclosureVersionFromXMLFile() throws {
+        let appcastResource = try XCTUnwrap(Bundle.module.url(
+            forResource: "appcast_delta_inherits_parent_enclosure_version",
+            withExtension: "xml"
+        ))
+        let appcastData = try Data(contentsOf: appcastResource)
+        let appcast = try SUAppcast(
+            xmlData: appcastData,
+            relativeTo: nil,
+            stateResolver: nil,
+            signingValidationStatus: .succeeded
+        )
+        let parentItem = try XCTUnwrap(appcast.items.first)
+        let deltaItem = try XCTUnwrap(parentItem.deltaUpdates["1.0"])
+
+        XCTAssertEqual(parentItem.versionString, "3.0")
+        XCTAssertEqual(deltaItem.versionString, parentItem.versionString)
+    }
+
     func test_deltaUpdate_doesNotRecursivelyCopySiblingDeltas() throws {
         var dictionary = createBasicAppcastItemDictionary()
 

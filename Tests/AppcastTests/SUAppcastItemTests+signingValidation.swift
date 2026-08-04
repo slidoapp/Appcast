@@ -150,6 +150,23 @@ final class SUAppcastItemTests_signingValidation: SUAppcastItemBaseTests {
         XCTAssertEqual(item.releaseNotesContentLength, 1234)
     }
 
+    func test_validatedFeed_descriptionURLWithoutReleaseNotesLink_isPreserved() throws {
+        for scheme in ["http", "https"] {
+            var dictionary = createBasicAppcastItemDictionary()
+            dictionary[SURSSElement.Description] = "\(scheme)://example.com/release-notes"
+
+            let item = try SUAppcastItem(
+                dictionary: dictionary,
+                relativeTo: nil,
+                stateResolver: nil,
+                resolvedState: nil,
+                signingValidationStatus: .succeeded
+            )
+
+            XCTAssertEqual(item.releaseNotesURL?.absoluteString, "\(scheme)://example.com/release-notes")
+        }
+    }
+
     func test_failedValidation_appcastSkipsRejectedItemsAndPreservesStatusWhenFiltered() throws {
         let xml = """
         <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">

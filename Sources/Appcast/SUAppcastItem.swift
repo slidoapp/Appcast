@@ -892,6 +892,7 @@ public struct SUAppcastItem: Sendable, Equatable {
 
                 var deltaItemDictionary = dict
                 deltaItemDictionary.removeValue(forKey: SUAppcastElement.Deltas)
+                deltaItemDictionary[SUAppcastElement.Version] = newVersion
                 deltaItemDictionary[SURSSElement.Enclosure] = deltaEnclosure
 
                 do {
