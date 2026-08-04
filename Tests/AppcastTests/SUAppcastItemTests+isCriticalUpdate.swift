@@ -62,6 +62,27 @@ class SUAppcastItemTests_isCriticalUpdate: SUAppcastItemBaseTests {
         try XCTSkipUnless(actualCriticalUpdate, "Legacy format of critical updates in the <sparkle:tags> element are not supported.")
         XCTAssertTrue(actualCriticalUpdate)
     }
+
+    func test_isCriticalUpdate_topLevelVersionedElementTakesPrecedenceOverLegacyTag() throws {
+        var dict = createBasicAppcastItemDictionary()
+        dict[SUAppcastElement.CriticalUpdate] = [SUAppcastAttribute.Version: "1.0"]
+        dict[SUAppcastElement.Tags] = [SUAppcastElement.CriticalUpdate]
+
+        let comparator = SUStandardVersionComparator.default
+        let stateResolver = SPUAppcastItemStateResolver(
+            hostVersion: "2.0",
+            applicationVersionComparator: comparator,
+            standardVersionComparator: comparator
+        )
+        let item = try SUAppcastItem(
+            dictionary: dict,
+            relativeTo: nil,
+            stateResolver: stateResolver,
+            resolvedState: nil
+        )
+
+        XCTAssertFalse(item.isCriticalUpdate)
+    }
     
     // MARK: - helper functions
     func createAppcastItemWithCriticalUpdateDictionary() -> SUAppcastItemProperties {

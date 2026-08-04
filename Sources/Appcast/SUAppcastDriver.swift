@@ -57,7 +57,7 @@ public class SUAppcastDriver {
 
         let hostPassesSkippedMajorVersion = SPUAppcastItemStateResolver.isMinimumAutoupdateVersionOK(skippedUpdate?.majorVersion, hostVersion: hostVersion, versionComparator: versionComparator)
 
-        let filteredItems = appcast.items.filter { item in
+        return appcast.copyByFilteringItems { item in
             let passesOSVersion = !testOSVersion || (item.minimumOperatingSystemVersionIsOK && item.maximumOperatingSystemVersionIsOK)
             let passesHardwareRequirements = !testOSVersion || item.arm64HardwareRequirementIsOK
             let passesPhasedRollout = itemIsReadyForPhasedRollout(item, phasedUpdateGroup: phasedUpdateGroup, currentDate: currentDate, hostVersion: hostVersion, versionComparator: versionComparator)
@@ -66,8 +66,6 @@ public class SUAppcastDriver {
 
             return passesOSVersion && passesHardwareRequirements && passesPhasedRollout && passesMinimumAutoupdateVersion && passesSkippedUpdates
         }
-
-        return SUAppcast(items: filteredItems)
     }
     
     public static func deltaUpdate(from appcastItem: SUAppcastItem, hostVersion: String) -> SUAppcastItem? {
@@ -103,7 +101,7 @@ public class SUAppcastDriver {
     }
     
     public static func filterAppcast(_ appcast: SUAppcast, forMacOSAndAllowedChannels allowedChannels: [String]) -> SUAppcast {
-        let filteredItems = appcast.items.filter { item in
+        return appcast.copyByFilteringItems { item in
             // We will never care about other OS's
             if !item.isMacOsUpdate {
                 return false
@@ -126,8 +124,6 @@ public class SUAppcastDriver {
             
             return allowedChannels.contains(channel)
         }
-        
-        return SUAppcast(items: filteredItems)
     }
     
     // + (SUAppcast *)filterAppcast:(SUAppcast *)appcast forMacOSAndAllowedChannels:(NSSet<NSString *> *)allowedChannels
